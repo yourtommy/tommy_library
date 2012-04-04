@@ -1,0 +1,8 @@
+lib/*
+app/*
+*.o
+*.swp
+*~
+.*
+!.gitignore
+backup.sh
