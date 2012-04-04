@@ -156,6 +156,6 @@ all: debug release
 .PHONY:clean
 clean:
 	${CleanObjects}
-	${RM} ${OUTPUT}
-	${RM} ${OUTPUT_D}
+	${RM} -r ${LIBDIR}
+	${RM} -r ${APPDIR}
 	$(NotifySuccess)
