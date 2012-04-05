@@ -1,8 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "sort.h"
 #include "utility.h"
+
+#define TEST_SORT_ARRAY(sort, numbers, length) { \
+    printf("===%s===\n", #sort); \
+    TestSortArray(&sort, numbers, length); \
+    printf("====================\n\n"); \
+}
 
 bool IsArraySorted(int *a, unsigned int length)
 {
@@ -13,20 +20,32 @@ bool IsArraySorted(int *a, unsigned int length)
     return true;
 }
 
-void TestInsertionSortArray(unsigned int length, int min_value, int max_value)
+void 
+TestSortArray(void (*sortp)(int *, int, int), int *a,
+        unsigned int length)
 {
+    // avoid the sorted result affecting the following
+    // tests.
     int *numbers = alloca(sizeof(int)*length);
-    GenerateRandomArrayInt(numbers, length, min_value, max_value);
+    memcpy(numbers, a, sizeof(int)*length);
+
     PrintArrayInt("Before sort", numbers, length);
-    InsertionSortArray(numbers, 0, length);
+    (*sortp)(numbers, 0, length);
     PrintArrayInt("After sort", numbers, length);
     if (!IsArraySorted(numbers, length))
         printf("Error: Array is not sorted!!\n");
 }
 
+
 int
 main(void)
 {
-    TestInsertionSortArray(GenerateRandomArrayLength(5, 10), 0, 100);
+    unsigned length = GenerateRandomArrayLength(15, 20);
+    int *numbers = alloca(sizeof(int)*length);
+    GenerateRandomArrayInt(numbers, length, 0, 100);
+
+    TEST_SORT_ARRAY(InsertionSortArray, numbers, length);
+    TEST_SORT_ARRAY(MergeSortArray, numbers, length);
+
     return 0;
 }
