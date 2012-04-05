@@ -73,6 +73,7 @@ main(void)
     TEST_SORT_ARRAY(MergeSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(HeapSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(QuickSortArray, numbers, length, begin, end);
+    TEST_SORT_ARRAY(CountingSortArray, numbers, length, begin, end);
 
     return 0;
 }
