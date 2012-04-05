@@ -7,6 +7,7 @@
 void InsertionSortArray(int *a, int begin, int end);
 void MergeSortArray(int *a, int begin, int end);
 void HeapSortArray(int *a, int begin, int end);
+void QuickSortArray(int *a, int begin, int end);
 
 #endif
 
