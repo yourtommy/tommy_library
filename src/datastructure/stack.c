@@ -13,9 +13,15 @@ StackEmpty(struct Stack *s)
 }
 
 bool
+StackFull(struct Stack *s)
+{
+    return s->top == STACK_MAX_CAPACITY - 1;
+}
+
+bool
 StackPush(struct Stack *s, int e)
 {
-    if (s->top == STACK_MAX_CAPACITY-1)
+    if (StackFull(s))
         return false;
     s->top++;
     s->array[s->top] = e;
