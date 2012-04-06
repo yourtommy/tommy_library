@@ -1,13 +1,32 @@
 #include "sort.h"
+#include "sortprivate.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
 
+
 void
-CountingSortArray(int *a, int begin, int end)
+CountingSortArray(int *a, int begin, int end, int min, int max)
 {
-    int countn = (CountingSortMax - CountingSortMin + 1); 
+    CountingSortArrayWithConvert(a, begin, end, min, max, 0);
+}
+
+inline int
+NoConvert(int value)
+{
+    return value;
+}
+
+/* A mask is used to sort part of the value, normally for radix sort. */
+void
+CountingSortArrayWithConvert(int *a, int begin, int end, 
+        int min, int max, int (*convert)(int))
+{
+    if (!convert)
+        convert = &NoConvert;
+
+    int countn = (max - min + 1); 
     int *counta = alloca(sizeof(int) * countn);
     memset(counta, 0, sizeof(int) * countn);
 
@@ -17,16 +36,16 @@ CountingSortArray(int *a, int begin, int end)
 
     int i;
     for (i = 0; i < len; i++)
-        counta[copya[i] - CountingSortMin]++;
+        counta[(*convert)(copya[i]) - min]++;
     for (i = 1; i < countn; i++)
         counta[i] += counta[i-1];
     for (i = len-1; i >= 0; i--) {
-        bool valid = copya[i] >= CountingSortMin
-            && copya[i] <= CountingSortMax;
+        bool valid = (*convert)(copya[i]) >= min
+            && (*convert)(copya[i]) <= max;
         assert(valid);
         if (!valid)
             return;
-        a[begin + counta[copya[i] - CountingSortMin] - 1] = copya[i];
-        counta[copya[i] - CountingSortMin]--;
+        a[begin + counta[(*convert)(copya[i]) - min] - 1] = copya[i];
+        counta[(*convert)(copya[i]) - min]--;
     }
 }

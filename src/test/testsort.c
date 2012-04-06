@@ -8,8 +8,13 @@
 #define TEST_SORT_ARRAY(sort, numbers, length, begin, end) { \
     printf("===%s===\n", #sort); \
     TestSortArray(&sort, numbers, length, begin, end); \
-    printf("====================\n\n"); \
+    printf("====================\n\n\n"); \
 }
+
+static const int TestMinArrayLen = 80;
+static const int TestMaxArrayLen = 120;
+static const int TestMinValue = -58000;
+static const int TestMaxValue = 58000;
 
 bool IsArraySorted(int *a, int begin, int end)
 {
@@ -21,7 +26,7 @@ bool IsArraySorted(int *a, int begin, int end)
 }
 
 
-bool ArrayEqaulSortInsensitive(int *sorted, int *origin, int begin, int end) {
+int FindMissingElement(int *origin, int *sorted, int begin, int end) {
     int i;
     for (i = begin; i < end; i++) {
         bool found = false;
@@ -36,9 +41,9 @@ bool ArrayEqaulSortInsensitive(int *sorted, int *origin, int begin, int end) {
                 left = mid + 1;
         }
         if (!found)
-            return false;
+            return i;
     }
-    return true;
+    return -1;
 }
 
 void 
@@ -52,19 +57,30 @@ TestSortArray(void (*sortp)(int *, int, int),
     PrintArrayInt("Before sort", numbers, length);
     (*sortp)(numbers, begin, end);
     PrintArrayInt("After sort", numbers, length);
-    if (!IsArraySorted(numbers, begin, end))
+    if (!IsArraySorted(numbers, begin, end)) {
         printf("Error: Array is not sorted!!\n");
-    if (!ArrayEqaulSortInsensitive(numbers, a, begin, end))
-        printf("Error: Elements are not consistent!!\n");
+        return;
+    }
+    
+    int missing = -1;
+    if ((missing = FindMissingElement(a, numbers, begin, end)) != -1) {
+        printf("Error: Element %d (index %d) is missing!!\n", numbers[missing], missing);
+        return;
+    }
+}
+
+void CountingSortArrayWithDefaultRange(int *a, int begin, int end)
+{
+    CountingSortArray(a, begin, end, TestMinValue, TestMaxValue);
 }
 
 
 int
 main(void)
 {
-    unsigned length = GenerateRandomArrayLength(15, 20);
+    unsigned length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
     int *numbers = alloca(sizeof(int)*length);
-    GenerateRandomArrayInt(numbers, length, 0, 100);
+    GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
     const int begin = 2;
     const int end = length - 2;   
@@ -73,7 +89,8 @@ main(void)
     TEST_SORT_ARRAY(MergeSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(HeapSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(QuickSortArray, numbers, length, begin, end);
-    TEST_SORT_ARRAY(CountingSortArray, numbers, length, begin, end);
+    TEST_SORT_ARRAY(CountingSortArrayWithDefaultRange, numbers, length, begin, end);
+    TEST_SORT_ARRAY(RadixSortArray, numbers, length, begin, end);
 
     return 0;
 }

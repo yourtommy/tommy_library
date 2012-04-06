@@ -27,5 +27,5 @@ PrintArrayInt(char *title, int *array, unsigned int length)
     printf("%s: ", title);
     for (i = 0; i < length; i++)
         printf("%d ", array[i]); 
-    printf("\n");
+    printf("\n\n");
 }
