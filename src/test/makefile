@@ -1,5 +1,5 @@
 OUTTYPE=executable
 OUTNAME=test
-INPUTNAMES=sort
+INPUTNAMES=sort datastructure
 include ../mk/output.mk
 
