@@ -4,4 +4,5 @@ void
 TestDataStructure()
 {
     TestStack();
+    TestQueue();
 }
