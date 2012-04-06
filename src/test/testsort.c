@@ -75,8 +75,8 @@ void CountingSortArrayWithDefaultRange(int *a, int begin, int end)
 }
 
 
-int
-main(void)
+void
+TestSort(void)
 {
     unsigned length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
     int *numbers = alloca(sizeof(int)*length);
@@ -91,6 +91,4 @@ main(void)
     TEST_SORT_ARRAY(QuickSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(CountingSortArrayWithDefaultRange, numbers, length, begin, end);
     TEST_SORT_ARRAY(RadixSortArray, numbers, length, begin, end);
-
-    return 0;
 }

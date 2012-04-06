@@ -1,5 +1,5 @@
 OUTTYPE=executable
-OUTNAME=test_sort
+OUTNAME=test
 INPUTNAMES=sort
 include ../mk/output.mk
 
