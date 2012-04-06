@@ -1,4 +1,4 @@
-#include "datastructure.h"
+#include "queue.h"
 
 #define QUEUE_MAX_ARRAY_SIZE    (QUEUE_MAX_CAPACITY+1)
 

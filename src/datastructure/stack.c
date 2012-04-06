@@ -1,4 +1,4 @@
-#include "datastructure.h"
+#include "stack.h"
 
 void
 StackInit(struct Stack *s)
