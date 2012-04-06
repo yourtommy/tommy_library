@@ -34,7 +34,7 @@ endif
 ###############################
 INCDIR?=${BASEDIR}/include
 SOURCES:=$(shell ls *.c)
-INCLUDES:=${INCDIR}/sort.h
+INCLUDES:=$(foreach name, ${INCNAMES}, ${INCDIR}/${name}.h)
 OBJDIR:=obj# dir to put all the intermediate object files
 OBJECTS:=$(addprefix ${OBJDIR}/,$(subst .c,.o,${SOURCES}))# generate the object names and prepend the object dir to each of them.
 DEUBG_SUFFIX:=d

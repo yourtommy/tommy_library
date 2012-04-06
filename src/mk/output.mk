@@ -14,9 +14,9 @@
 # Warn that the varible not defined and 
 # a defualt value is used.
 # Usage: $(call MakeVar,VarName)
-define WarnVar
-  $(warning Variable $1 is not defined. Using "$($1)".)
-endef
+#define WarnVar
+#  $(warning Variable $1 is not defined. Using "$($1)".)
+#endef
 
 # Error: the varible is not defined. 
 # Usage: $(call ErrorVar,VarName)
