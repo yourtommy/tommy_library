@@ -5,6 +5,7 @@ void TestSort();
 void TestDataStructure();
 void TestStack();
 void TestQueue();
+void TestList();
 
 #endif
 

@@ -5,4 +5,5 @@ TestDataStructure()
 {
     TestStack();
     TestQueue();
+    TestList();
 }

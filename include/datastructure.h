@@ -3,6 +3,7 @@
 
 #include "stack.h"
 #include "queue.h"
+#include "list.h"
 
 #endif
 
