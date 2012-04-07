@@ -23,8 +23,8 @@ ListInsertAfter(struct List *where, struct List *node)
     node->prev = where;
     node->next = where->next;
     where->next = node;
-    if (where->next != NULL)
-        where->next->prev = node;
+    if (node->next != NULL)
+        node->next->prev = node;
     return true;
 }
 
