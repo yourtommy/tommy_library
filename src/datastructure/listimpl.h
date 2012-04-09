@@ -17,6 +17,8 @@
         InsertAfter, \
         Delete, \
         DeleteAll, \
+        Search, \
+        SetValue, \
         Value) \
     TYPEDEF bool Init(List *listp); \
     TYPEDEF bool Free(List *listp); \
@@ -30,6 +32,8 @@
     TYPEDEF bool InsertAfter(List *listp, ListItor itor, int value); \
     TYPEDEF bool Delete(List *listp, ListItor itor); \
     TYPEDEF bool DeleteAll(List *listp); \
+    TYPEDEF ListItor Search(List *listp, int value); \
+    TYPEDEF bool SetValue(List *listp, ListItor itor, int value); \
     TYPEDEF int Value(List *listp, ListItor itor);
 
 #define DECLARE_FUNCTIONS(LIST_TYPE) \
@@ -46,7 +50,9 @@
             LIST_TYPE ## InsertAfter, \
             LIST_TYPE ## Delete, \
             LIST_TYPE ## DeleteAll, \
-            LIST_TYPE ## Value); 
+            LIST_TYPE ## Search, \
+            LIST_TYPE ## SetValue, \
+            LIST_TYPE ## Value) 
 
 // Declare function pointers
 API_PROTOTYPE(typedef, 
@@ -62,6 +68,8 @@ API_PROTOTYPE(typedef,
         (*InsertAfterPtr),
         (*DeletePtr),
         (*DeleteAllPtr),
+        (*SearchPtr),
+        (*SetValuePtr),
         (*ValuePtr))
 
 DECLARE_FUNCTIONS(DLSList)
@@ -84,6 +92,8 @@ DECLARE_FUNCTIONS(DLSList)
     DEFINE_FUNCTION_TABLE(InsertAfter) \
     DEFINE_FUNCTION_TABLE(Delete) \
     DEFINE_FUNCTION_TABLE(DeleteAll) \
+    DEFINE_FUNCTION_TABLE(Search) \
+    DEFINE_FUNCTION_TABLE(SetValue) \
     DEFINE_FUNCTION_TABLE(Value)
 
 /* DLS types */

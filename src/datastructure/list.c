@@ -126,6 +126,24 @@ bool ListDeleteAll(List *listp)
     return ptr == NULL ? false : (*ptr)(listp);
 }
 
+ListItor ListSearch(List *listp, int value)
+{
+    if (listp == NULL)
+        return NULL;
+
+    SearchPtr ptr = SearchTable[listp->type];
+    return ptr == NULL ? NULL : (*ptr)(listp, value);
+}
+
+bool ListSetValue(List *listp, ListItor itor, int value)
+{
+    if (listp == NULL)
+        return false;
+
+    SetValuePtr ptr = SetValueTable[listp->type];
+    return ptr == NULL ? false : (*ptr)(listp, itor, value);
+}
+
 int ListValue(List *listp, ListItor itor)
 {
     if (listp == NULL || itor == NULL)
@@ -263,6 +281,21 @@ bool DLSListDeleteAll(List *listp)
         headp = p;
     }
     listp->head_tail[0] = listp->head_tail[1] = NULL;
+    return true;
+}
+
+ListItor DLSListSearch(List *listp, int value)
+{
+    ListNode *headp = listp->head_tail[0];
+    while (headp != NULL && headp->value != value)
+        headp = headp->next;
+    return headp;
+}
+
+bool DLSListSetValue(List *listp, ListItor itor, int value)
+{
+    UNUSED(listp);
+    ((ListNode *)itor)->value = value;
     return true;
 }
 

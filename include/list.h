@@ -11,7 +11,6 @@ typedef enum ListType
 {
     LT_DLS = 0, // DoubleLinkedSentinel 
     LT_DLNS, // DoubleLinkedNoSentinel
-    LT_num // total list type num
 } ListType;
 
 typedef void *ListItor;
@@ -23,50 +22,58 @@ typedef struct List
 } List;
 
 
-/* Must init before using a list */
-bool ListInit(List *list, ListType type);
+/* Must init before using a listp */
+bool ListInit(List *listp, ListType type);
 
 /* List cannot be used after being freed unless being init'd again */
-bool ListFree(List *list);
+bool ListFree(List *listp);
 
-/* Return true if list is empty */
-bool ListEmpty(List *list);
+/* Return true if listp is empty */
+bool ListEmpty(List *listp);
 
-/* Get the itor of the first element. Return NULL if list is empty */
-ListItor ListHead(List *list);
+/* Get the itor of the first element. Return NULL if listp is empty */
+ListItor ListHead(List *listp);
 
-/* Get the itor of the last element. Return NULL if list is empty */
-ListItor ListTail(List *list);
+/* Get the itor of the last element. Return NULL if listp is empty */
+ListItor ListTail(List *listp);
 
 /* Get the next element of itor. Return NULL if itor is tail */
-ListItor ListNext(List *list, ListItor itor);
+ListItor ListNext(List *listp, ListItor itor);
 
 /* Get the previous element of itor. Return NULL if itor is head */
-ListItor ListPrev(List *list, ListItor itor);
+ListItor ListPrev(List *listp, ListItor itor);
 
 /* Insert element as the first itor. */
-bool ListPrepend(List *list, int value);
+bool ListPrepend(List *listp, int value);
 
 /* Insert element as the last itor. */
-bool ListAppend(List *list, int value);
+bool ListAppend(List *listp, int value);
 
 /* Insert element before itor. Return true if successful. itor cannot be null. */
-bool ListInsertBefore(List *list, ListItor itor, int value);
+bool ListInsertBefore(List *listp, ListItor itor, int value);
 
 /* Insert element after itor. Return true if successful. itor cannot be null. */
-bool ListInsertAfter(List *list, ListItor itor, int value);
+bool ListInsertAfter(List *listp, ListItor itor, int value);
 
-/* Delete itor from list */
-bool ListDelete(List *list, ListItor itor);
+/* Delete itor from listp */
+bool ListDelete(List *listp, ListItor itor);
 
-/* Delete all nodes from list. This function is different from ListFree
+/* Delete all nodes from listp. This function is different from ListFree
  * since it may not free all allocated memory and can be used without
  * another init.
  */
-bool ListDeleteAll(List *list);
+bool ListDeleteAll(List *listp);
 
+/* Search value in listp and return the itor storing that value.
+ * Return Null if not found.
+ */
+ListItor ListSearch(List *listp, int value); 
+
+/* Stor the value into itor */
+bool ListSetValue(List *listp, ListItor itor, int value); 
+    
 /* Get the value stored in itor */
-int ListValue(List *list, ListItor itor);
+int ListValue(List *listp, ListItor itor);
 
 #endif
 

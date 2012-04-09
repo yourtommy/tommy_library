@@ -181,6 +181,7 @@ bool TestListInsertBefore(List *list)
 
 bool TestListInsertAfter(List *list)
 {
+    ListDeleteAll(list); // Already tested
     if (!ListEmpty(list)) {
         sprintf(error, "This test requires list to be empty");
         return false;
@@ -302,6 +303,52 @@ TestListDelete(List *list)
     return true;
 }
 
+bool
+TestListSearch(List *list)
+{
+    ListDeleteAll(list); // Already tested
+    int i;
+    for (i = 0; i < length; i++)
+        ListAppend(list, numbers[i]);
+    for (i = length - 1; i >= 0; i--)
+        if (ListSearch(list, numbers[i]) == NULL ||
+                ListValue(list, ListSearch(list, numbers[i])) != numbers[i]) {
+            sprintf(error, "Cannot find existing element [%d]", i);
+            return false;
+        }
+    if (ListSearch(list, TestMaxValue + 1) != NULL) {
+        sprintf(error, "Found nonexisting element - bigger than max");
+        return false;
+    }
+    if (ListSearch(list, TestMinValue - 1) != NULL) {
+        sprintf(error, "Found nonexisting element - smaller than min");
+        return false;
+    }
+    return true;
+}
+
+bool
+TestListSetValue(List *list)
+{
+    ListDeleteAll(list); // Already tested
+    int i;
+    for (i = 0; i < length; i++)
+        ListAppend(list, 0);
+    ListItor itor = ListHead(list);
+    for (i = 0; i < length; i++) {
+        if (!ListSetValue(list, itor, numbers[i])) {
+            sprintf(error, "ListSetValue failed [%d]", i);
+            return false;
+        }
+        itor = ListNext(list, itor);
+    }
+    if (!VerifyListConsistency(list)) {
+        sprintf(error, "Data is wrong after set value - %s", error);
+        return false;
+    }
+    return true;
+}
+
 void
 PrintError(const char *op) 
 {
@@ -339,17 +386,18 @@ void TestList()
         PrintError("TestListInsertBefore");
         return;
     }
-    ListDeleteAll(&l); // Already tested
     if (!TestListInsertAfter(&l)) {
         PrintError("TestListInsertAfter");
         return;
     }
-    
-
-#ifdef TOREMOVE
-    else if (!TestSEARCH_LIST(numbers, length, error))
-        printf("TestSEARCH_LIST failed!! Error: %s\n", error);
-#endif
+    if (!TestListSearch(&l)) {
+        PrintError("TestListInsertSearch");
+        return;
+    }
+    if (!TestListSetValue(&l)) {
+        PrintError("TestListSetValue");
+        return;
+    }
     else
         printf("TestList passed!!\n");
 }
