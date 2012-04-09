@@ -26,7 +26,7 @@ typedef struct List
 /* Must init before using a list */
 bool ListInit(List *list, ListType type);
 
-/* List *cannot be used after being freed unless being init'd again */
+/* List cannot be used after being freed unless being init'd again */
 bool ListFree(List *list);
 
 /* Return true if list is empty */
@@ -38,29 +38,35 @@ ListItor ListHead(List *list);
 /* Get the itor of the last element. Return NULL if list is empty */
 ListItor ListTail(List *list);
 
-/* Get the next element of node. Return NULL if node is tail */
-ListItor ListNext(List *list, ListItor node);
+/* Get the next element of itor. Return NULL if itor is tail */
+ListItor ListNext(List *list, ListItor itor);
 
-/* Get the previous element of node. Return NULL if node is head */
-ListItor ListPrev(List *list, ListItor node);
+/* Get the previous element of itor. Return NULL if itor is head */
+ListItor ListPrev(List *list, ListItor itor);
 
-/* Insert element as the first node. */
+/* Insert element as the first itor. */
 bool ListPrepend(List *list, int value);
 
-/* Insert element as the last node. */
+/* Insert element as the last itor. */
 bool ListAppend(List *list, int value);
 
-/* Insert element before node. Return true if successful. node cannot be null. */
-bool ListInsertBefore(List *list, ListItor node, int value);
+/* Insert element before itor. Return true if successful. itor cannot be null. */
+bool ListInsertBefore(List *list, ListItor itor, int value);
 
-/* Insert element after node. Return true if successful. node cannot be null. */
-bool ListInsertAfter(List *list, ListItor node, int value);
+/* Insert element after itor. Return true if successful. itor cannot be null. */
+bool ListInsertAfter(List *list, ListItor itor, int value);
 
-/* Insert element after node. Return true if successful. node cannot be null. */
-bool ListInsertAfter(List *list, ListItor node, int value);
+/* Delete itor from list */
+bool ListDelete(List *list, ListItor itor);
 
-/* Get the value stored in node */
-int ListValue(List *list, ListItor node);
+/* Delete all nodes from list. This function is different from ListFree
+ * since it may not free all allocated memory and can be used without
+ * another init.
+ */
+bool ListDeleteAll(List *list);
+
+/* Get the value stored in itor */
+int ListValue(List *list, ListItor itor);
 
 #endif
 

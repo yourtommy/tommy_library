@@ -15,18 +15,22 @@
         Append, \
         InsertBefore, \
         InsertAfter, \
+        Delete, \
+        DeleteAll, \
         Value) \
-    TYPEDEF bool Init(List *list); \
-    TYPEDEF bool Free(List *list); \
-    TYPEDEF ListItor Head(List *list); \
-    TYPEDEF ListItor Tail(List *list); \
-    TYPEDEF ListItor Next(List *list, ListItor node); \
-    TYPEDEF ListItor Prev(List *list, ListItor node); \
-    TYPEDEF bool Prepend(List *list, int value); \
-    TYPEDEF bool Append(List *list, int value); \
-    TYPEDEF bool InsertBefore(List *list, ListItor node, int value); \
-    TYPEDEF bool InsertAfter(List *list, ListItor node, int value); \
-    TYPEDEF int Value(List *list, ListItor node);
+    TYPEDEF bool Init(List *listp); \
+    TYPEDEF bool Free(List *listp); \
+    TYPEDEF ListItor Head(List *listp); \
+    TYPEDEF ListItor Tail(List *listp); \
+    TYPEDEF ListItor Next(List *listp, ListItor itor); \
+    TYPEDEF ListItor Prev(List *listp, ListItor itor); \
+    TYPEDEF bool Prepend(List *listp, int value); \
+    TYPEDEF bool Append(List *listp, int value); \
+    TYPEDEF bool InsertBefore(List *listp, ListItor itor, int value); \
+    TYPEDEF bool InsertAfter(List *listp, ListItor itor, int value); \
+    TYPEDEF bool Delete(List *listp, ListItor itor); \
+    TYPEDEF bool DeleteAll(List *listp); \
+    TYPEDEF int Value(List *listp, ListItor itor);
 
 #define DECLARE_FUNCTIONS(LIST_TYPE) \
     API_PROTOTYPE(, \
@@ -40,6 +44,8 @@
             LIST_TYPE ## Append, \
             LIST_TYPE ## InsertBefore, \
             LIST_TYPE ## InsertAfter, \
+            LIST_TYPE ## Delete, \
+            LIST_TYPE ## DeleteAll, \
             LIST_TYPE ## Value); 
 
 // Declare function pointers
@@ -54,6 +60,8 @@ API_PROTOTYPE(typedef,
         (*AppendPtr),
         (*InsertBeforePtr), 
         (*InsertAfterPtr),
+        (*DeletePtr),
+        (*DeleteAllPtr),
         (*ValuePtr))
 
 DECLARE_FUNCTIONS(DLSList)
@@ -74,6 +82,8 @@ DECLARE_FUNCTIONS(DLSList)
     DEFINE_FUNCTION_TABLE(Append) \
     DEFINE_FUNCTION_TABLE(InsertBefore) \
     DEFINE_FUNCTION_TABLE(InsertAfter) \
+    DEFINE_FUNCTION_TABLE(Delete) \
+    DEFINE_FUNCTION_TABLE(DeleteAll) \
     DEFINE_FUNCTION_TABLE(Value)
 
 /* DLS types */
