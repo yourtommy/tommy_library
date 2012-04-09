@@ -28,12 +28,21 @@ bool ListFree(List *listp)
     return ptr == NULL ? false : (*ptr)(listp);
 }
 
+bool ListItorNull(List *listp, ListItor itor)
+{
+    if (listp == NULL)
+        return true;
+
+    ItorNullPtr ptr = ItorNullTable[listp->type];
+    return ptr == NULL ? true : (*ptr)(listp, itor);
+}
+
 bool ListEmpty(List *listp)
 {
     if (listp == NULL)
         return true;
 
-    return ListHead(listp) == NULL;
+    return ListItorNull(listp, ListHead(listp));
 }
 
 ListItor ListHead(List *listp)
@@ -74,7 +83,7 @@ bool ListAppend(List *listp, int value)
 
 ListItor ListNext(List *listp, ListItor itor)
 {
-    if (listp == NULL || itor == NULL)
+    if (listp == NULL || ListItorNull(listp, itor))
         return NULL;
 
     NextPtr ptr = NextTable[listp->type];
@@ -83,7 +92,7 @@ ListItor ListNext(List *listp, ListItor itor)
 
 ListItor ListPrev(List *listp, ListItor itor)
 {
-    if (listp == NULL || itor == NULL)
+    if (listp == NULL || ListItorNull(listp, itor))
         return NULL;
 
     PrevPtr ptr = PrevTable[listp->type];
@@ -92,7 +101,7 @@ ListItor ListPrev(List *listp, ListItor itor)
 
 bool ListInsertBefore(List *listp, ListItor itor, int value)
 {
-    if (listp == NULL || itor == NULL)
+    if (listp == NULL || ListItorNull(listp, itor))
         return false;
 
     InsertBeforePtr ptr = InsertBeforeTable[listp->type];
@@ -101,7 +110,7 @@ bool ListInsertBefore(List *listp, ListItor itor, int value)
 
 bool ListInsertAfter(List *listp, ListItor itor, int value)
 {
-    if (listp == NULL || itor == NULL)
+    if (listp == NULL || ListItorNull(listp, itor))
         return false;
 
     InsertAfterPtr ptr = InsertAfterTable[listp->type];
@@ -110,7 +119,7 @@ bool ListInsertAfter(List *listp, ListItor itor, int value)
 
 bool ListDelete(List *listp, ListItor itor)
 {
-    if (listp == NULL || itor == NULL)
+    if (listp == NULL || ListItorNull(listp, itor))
         return false;
 
     DeletePtr ptr = DeleteTable[listp->type];
@@ -146,7 +155,7 @@ bool ListSetValue(List *listp, ListItor itor, int value)
 
 int ListValue(List *listp, ListItor itor)
 {
-    if (listp == NULL || itor == NULL)
+    if (listp == NULL || ListItorNull(listp, itor))
         return false;
 
     ValuePtr ptr = ValueTable[listp->type];
@@ -157,15 +166,165 @@ int ListValue(List *listp, ListItor itor)
 
 
 
-// ======= DLSListLT_ (Double Linked Sentinel) =========
+// ======= LT_DLS (Double Linked Sentinel) =========
 
-bool DLSListInit(List *listp)
+bool
+DLSListInit(List *listp)
+{
+    ListNode *sentinelp = malloc(sizeof(ListNode));
+    sentinelp->next = sentinelp->prev = sentinelp;
+    listp->head_tail[0] = listp->head_tail[1] = sentinelp;
+    
+    return true;
+}
+
+bool
+DLSListFree(List *listp)
+{
+    if (!DLSListDeleteAll(listp))
+        return false;
+    return true;
+}
+
+bool
+DLSListItorNull(List *listp, ListItor itor) 
+{
+    return itor == listp->head_tail[0];
+}
+
+ListItor 
+DLSListHead(List *listp)
+{
+    return ((ListNode *)listp->head_tail[0])->next;
+}
+
+ListItor 
+DLSListTail(List *listp)
+{
+    return ((ListNode *)listp->head_tail[0])->prev;
+}
+
+ListItor 
+DLSListNext(List *listp, ListItor itor)
+{
+    UNUSED(listp);
+    return ((ListNode *)itor)->next;
+}
+
+ListItor 
+DLSListPrev(List *listp, ListItor itor)
+{
+    UNUSED(listp);
+    return ((ListNode *)itor)->prev;
+}
+
+bool 
+DLSListPrepend(List *listp, int value)
+{
+    return DLSListInsertBefore(listp, DLSListHead(listp), value);
+}
+
+bool 
+DLSListAppend(List *listp, int value)
+{
+    return DLSListInsertAfter(listp, DLSListTail(listp), value);
+}
+
+bool 
+DLSListInsertBefore(List *listp, ListItor itor, int value)
+{
+    UNUSED(listp);
+    ListNode *nodep = itor;
+    ListNode *new_nodep = malloc(sizeof(ListNode));
+    new_nodep->value = value;
+
+    new_nodep->next = nodep;
+    new_nodep->prev = nodep->prev;
+    nodep->prev = new_nodep;
+    new_nodep->prev->next = new_nodep;
+
+    return true;
+}
+
+bool 
+DLSListInsertAfter(List *listp, ListItor itor, int value)
+{
+    UNUSED(listp);
+    ListNode *nodep = itor;
+    ListNode *new_nodep = malloc(sizeof(ListNode));
+    new_nodep->value = value;
+
+    new_nodep->prev = nodep;
+    new_nodep->next = nodep->next;
+    nodep->next = new_nodep;
+    new_nodep->next->prev = new_nodep;
+
+    return true;
+}
+
+bool 
+DLSListDelete(List *listp, ListItor itor)
+{
+    UNUSED(listp);
+    ListNode *nodep = itor;
+    nodep->prev->next = nodep->next;
+    nodep->next->prev = nodep->prev;
+
+    return true;
+}
+
+bool 
+DLSListDeleteAll(List *listp)
+{
+    ListNode *headp = DLSListHead(listp);
+    while (headp != listp->head_tail[0]) {
+        ListNode *p = headp->next;
+        free(headp);
+        headp = p;
+    }
+    ListNode *sentinel = listp->head_tail[0];
+    sentinel->next = sentinel->prev = sentinel;
+    return true;
+}
+
+ListItor 
+DLSListSearch(List *listp, int value)
+{
+    ListNode *headp = DLSListHead(listp);
+    while (!ListItorNull(listp, headp) && headp->value != value)
+        headp = headp->next;
+    return headp;
+}
+
+bool 
+DLSListSetValue(List *listp, ListItor itor, int value)
+{
+    UNUSED(listp);
+    ((ListNode *)itor)->value = value;
+    return true;
+}
+
+int 
+DLSListValue(List *listp, ListItor itor)
+{
+    UNUSED(listp);
+    return ((ListNode *)itor)->value;
+}
+
+// =================================================
+
+
+// ======= LT_DLNS (Double Linked No Sentinel) =========
+
+bool 
+DLNSListInit(List *listp)
 {
     listp->head_tail[0] = listp->head_tail[1] = NULL;
     return true;
 }
 
-bool DLSListFree(List *listp)
+bool 
+DLNSListFree(List *listp)
 {
     while (listp->head_tail[0] != NULL) {
         ListNode *headp = ((ListNode*)listp->head_tail[0])->next;
@@ -175,29 +334,41 @@ bool DLSListFree(List *listp)
     return true;
 }
 
-ListItor DLSListHead(List *listp)
+bool
+DLNSListItorNull(List *listp, ListItor itor) 
+{
+    UNUSED(listp);
+    return itor == NULL;
+}
+
+ListItor 
+DLNSListHead(List *listp)
 {
     return listp->head_tail[0];
 }
 
-ListItor DLSListTail(List *listp)
+ListItor 
+DLNSListTail(List *listp)
 {
     return listp->head_tail[1];
 }
 
-ListItor DLSListNext(List *listp, ListItor itor)
+ListItor 
+DLNSListNext(List *listp, ListItor itor)
 {
     UNUSED(listp);
     return ((ListNode *)itor)->next;
 }
 
-ListItor DLSListPrev(List *listp, ListItor itor)
+ListItor 
+DLNSListPrev(List *listp, ListItor itor)
 {
     UNUSED(listp);
     return ((ListNode *)itor)->prev;
 }
 
-bool DLSListPrepend(List *listp, int value)
+bool 
+DLNSListPrepend(List *listp, int value)
 {
     if (listp->head_tail[0] == NULL) {
         ListNode *new_nodep = malloc(sizeof(ListNode));
@@ -206,10 +377,11 @@ bool DLSListPrepend(List *listp, int value)
         listp->head_tail[0] = listp->head_tail[1] = new_nodep;
         return true;
     } else
-        return DLSListInsertBefore(listp, listp->head_tail[0], value);
+        return DLNSListInsertBefore(listp, listp->head_tail[0], value);
 }
 
-bool DLSListAppend(List *listp, int value)
+bool 
+DLNSListAppend(List *listp, int value)
 {
     if (listp->head_tail[1] == NULL) {
         ListNode *new_nodep = malloc(sizeof(ListNode));
@@ -218,10 +390,11 @@ bool DLSListAppend(List *listp, int value)
         listp->head_tail[0] = listp->head_tail[1] = new_nodep;
         return true;
     } else
-        return DLSListInsertAfter(listp, listp->head_tail[1], value);
+        return DLNSListInsertAfter(listp, listp->head_tail[1], value);
 }
 
-bool DLSListInsertBefore(List *listp, ListItor itor, int value)
+bool 
+DLNSListInsertBefore(List *listp, ListItor itor, int value)
 {
     ListNode *nodep = itor;
     ListNode *new_nodep = malloc(sizeof(ListNode));
@@ -238,7 +411,8 @@ bool DLSListInsertBefore(List *listp, ListItor itor, int value)
     return true;
 }
 
-bool DLSListInsertAfter(List *listp, ListItor itor, int value)
+bool 
+DLNSListInsertAfter(List *listp, ListItor itor, int value)
 {
     ListNode *nodep = itor;
     ListNode *new_nodep = malloc(sizeof(ListNode));
@@ -255,7 +429,8 @@ bool DLSListInsertAfter(List *listp, ListItor itor, int value)
     return true;
 }
 
-bool DLSListDelete(List *listp, ListItor itor)
+bool 
+DLNSListDelete(List *listp, ListItor itor)
 {
     ListNode *nodep = itor;
     if (nodep->prev != NULL)
@@ -271,7 +446,8 @@ bool DLSListDelete(List *listp, ListItor itor)
     return true;
 }
 
-bool DLSListDeleteAll(List *listp)
+bool 
+DLNSListDeleteAll(List *listp)
 {
     ListNode *headp = listp->head_tail[0];
     ListNode *p = headp;
@@ -284,7 +460,8 @@ bool DLSListDeleteAll(List *listp)
     return true;
 }
 
-ListItor DLSListSearch(List *listp, int value)
+ListItor 
+DLNSListSearch(List *listp, int value)
 {
     ListNode *headp = listp->head_tail[0];
     while (headp != NULL && headp->value != value)
@@ -292,82 +469,19 @@ ListItor DLSListSearch(List *listp, int value)
     return headp;
 }
 
-bool DLSListSetValue(List *listp, ListItor itor, int value)
+bool 
+DLNSListSetValue(List *listp, ListItor itor, int value)
 {
     UNUSED(listp);
     ((ListNode *)itor)->value = value;
     return true;
 }
 
-int DLSListValue(List *listp, ListItor itor)
+int 
+DLNSListValue(List *listp, ListItor itor)
 {
     UNUSED(listp);
     return ((ListNode *)itor)->value;
 }
 
 // =================================================
-
-
-#ifdef TOREMOVE
-
-bool 
-DeleteDLList(DLList itor)
-{
-}
-
-DLList  
-SearchDLList(DLList l, int key)
-{
-    DLList p = l;
-    while (p != NULL && p->value != key) 
-        p = p->next;
-    return p;
-}
-
-bool
-InsertBeforeDLSList(DLSList nodep, DLSList itor)
-{
-    if (nodep == NULL || itor == NULL)
-        return false;
-    itor->prev = nodep->prev;
-    itor->next = nodep;
-    nodep->prev->next = itor;
-    nodep->prev = itor;
-    return false;
-}
-
-bool
-InsertAfterDLSList(DLSList nodep, DLSList itor)
-{
-    if (nodep == NULL || itor == NULL)
-        return false;
-    itor->next = nodep->next;
-    itor->prev = nodep;
-    nodep->next->prev = itor;
-    nodep->next = itor;
-    return true;
-}
-
-bool 
-DeleteDLSList(DLSList itor) 
-{
-    if (itor == NULL)
-        return false;
-    itor->prev->next = itor->next;
-    itor->next->prev = itor->prev;
-    return true;
-}
-
-DLSList  
-SearchDLSList(DLSList headp, int key)
-{
-    if (headp == NULL)
-        return NULL;
-    DLSList p = headp;
-    while (p != headp->prev && p->value != key)
-        p = p->next;
-    return p;
-}
-
-#endif
-

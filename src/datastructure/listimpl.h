@@ -7,6 +7,7 @@
 #define API_PROTOTYPE(TYPEDEF, \
         Init, \
         Free, \
+        ItorNull, \
         Head, \
         Tail, \
         Next, \
@@ -22,6 +23,7 @@
         Value) \
     TYPEDEF bool Init(List *listp); \
     TYPEDEF bool Free(List *listp); \
+    TYPEDEF bool ItorNull(List *listp, ListItor itor); \
     TYPEDEF ListItor Head(List *listp); \
     TYPEDEF ListItor Tail(List *listp); \
     TYPEDEF ListItor Next(List *listp, ListItor itor); \
@@ -40,6 +42,7 @@
     API_PROTOTYPE(, \
             LIST_TYPE ## Init, \
             LIST_TYPE ## Free, \
+            LIST_TYPE ## ItorNull, \
             LIST_TYPE ## Head, \
             LIST_TYPE ## Tail, \
             LIST_TYPE ## Next, \
@@ -58,6 +61,7 @@
 API_PROTOTYPE(typedef, 
         (*InitPtr),
         (*FreePtr), 
+        (*ItorNullPtr), 
         (*HeadPtr), 
         (*TailPtr), 
         (*NextPtr), 
@@ -73,15 +77,19 @@ API_PROTOTYPE(typedef,
         (*ValuePtr))
 
 DECLARE_FUNCTIONS(DLSList)
+DECLARE_FUNCTIONS(DLNSList)
 
 #define DEFINE_FUNCTION_TABLE(op) \
     static op ## Ptr op ## Table[] = { \
-        & DLSList ## op \
+        & DLSList ## op, \
+        & DLNSList ## op, \
+        NULL \
     };
 
 #define DEFINE_FUNCTION_TABLES \
     DEFINE_FUNCTION_TABLE(Init) \
     DEFINE_FUNCTION_TABLE(Free) \
+    DEFINE_FUNCTION_TABLE(ItorNull) \
     DEFINE_FUNCTION_TABLE(Head) \
     DEFINE_FUNCTION_TABLE(Tail) \
     DEFINE_FUNCTION_TABLE(Next) \

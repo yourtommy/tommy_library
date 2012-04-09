@@ -28,6 +28,9 @@ bool ListInit(List *listp, ListType type);
 /* List cannot be used after being freed unless being init'd again */
 bool ListFree(List *listp);
 
+/* Check whether itor is NULL */
+bool ListItorNull(List *listp, ListItor itor);
+
 /* Return true if listp is empty */
 bool ListEmpty(List *listp);
 

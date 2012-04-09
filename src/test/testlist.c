@@ -11,48 +11,6 @@ static const int TestMaxArrayLen = 120;
 static const int TestMinValue = -58902;
 static const int TestMaxValue = 58292;
 
-#ifdef TOREMOVE
-
-bool TestSEARCH_LIST(int *numbers, int len, char error[]) {
-    // insert after the last element. It's already been tested.
-    DLList *head;
-    head = alloca(sizeof(DLList));
-    head->prev = head->next = NULL;
-    head->value = numbers[0];
-    int i;
-    DLList *p = head;
-    for (i = 1; i < len; i++) {
-        DLList *node = alloca(sizeof(DLList));
-        node->prev = node->next = NULL;
-        node->value = numbers[i];
-        INSERT_AFTER_LIST(DLList, p, node); 
-        p = node;
-    }
-
-    // Search the 1st element.
-    p = SEARCH_LIST(DLList, head, numbers[0]);
-    if (p != head) { // The search result must be head because it's the first element of that value.
-        sprintf(error, "Searching 1st element failed");
-        return false;
-    }
-    // Search the 5th element.
-    p = SEARCH_LIST(DLList, head, numbers[4]);
-    if (p == NULL || p->value != numbers[4]) {
-        sprintf(error, "Searching 5th element failed");
-        return false;
-    }
-    // Search the last element.
-    p = SEARCH_LIST(DLList, head, numbers[len-1]);
-    if (p == NULL || p->value != numbers[len-1]) {
-        sprintf(error, "Searching the last element failed.");
-        return false;
-    }
-
-    return true;
-}
-
-#endif
-
 static int length;
 static int *numbers;
 char error[1024] = "";
@@ -69,7 +27,7 @@ VerifyListConsistency(List *list)
         }                                               
         itor = ListNext(list, itor);
     }                                                   
-    if (itor != NULL) {                                     
+    if (!ListItorNull(list, itor)) {                                     
         sprintf(error, "List has more elements at the end then numbers");                                
         return false;                                   
     }                                                   
@@ -81,7 +39,7 @@ VerifyListConsistency(List *list)
         }
         itor = ListPrev(list, itor);
     }
-    if (itor != NULL) {
+    if (!ListItorNull(list, itor)) {
         sprintf(error, "List has more elements at the begining then numbers");                                
         return false; 
     } 
@@ -127,7 +85,7 @@ TestListPrepend(List *list)
         }
     }
     if (!VerifyListConsistency(list)) {
-        sprintf(error, "List is not consistent with numbers after ListPrepend");
+        strcat(error, " - after ListPrepend");
         return false;
     }
     return true;
@@ -227,7 +185,7 @@ TestListDelete(List *list)
     }
     itor = ListTail(list);
     if (ListValue(list, itor) != numbers[length-2]
-            || ListNext(list, itor) != NULL
+            || !ListItorNull(list, ListNext(list, itor))
             || ListValue(list, ListPrev(list, itor)) != numbers[length-3]) {
         sprintf(error, "Data is not consistent after deleting the first element");
         return false;
@@ -267,7 +225,7 @@ TestListDelete(List *list)
     }
     itor = ListHead(list);
     if (ListValue(list, itor) != numbers[1] 
-            || ListPrev(list, itor) != NULL
+            || !ListItorNull(list, ListPrev(list, itor))
             || ListValue(list, ListNext(list, itor)) != numbers[2]) {
         sprintf(error, "Data is not consistent after deleting the first element");
         return false;
@@ -311,16 +269,16 @@ TestListSearch(List *list)
     for (i = 0; i < length; i++)
         ListAppend(list, numbers[i]);
     for (i = length - 1; i >= 0; i--)
-        if (ListSearch(list, numbers[i]) == NULL ||
+        if (ListItorNull(list, ListSearch(list, numbers[i])) ||
                 ListValue(list, ListSearch(list, numbers[i])) != numbers[i]) {
             sprintf(error, "Cannot find existing element [%d]", i);
             return false;
         }
-    if (ListSearch(list, TestMaxValue + 1) != NULL) {
+    if (!ListItorNull(list, ListSearch(list, TestMaxValue + 1))) {
         sprintf(error, "Found nonexisting element - bigger than max");
         return false;
     }
-    if (ListSearch(list, TestMinValue - 1) != NULL) {
+    if (!ListItorNull(list, ListSearch(list, TestMinValue - 1))) {
         sprintf(error, "Found nonexisting element - smaller than min");
         return false;
     }
@@ -355,14 +313,13 @@ PrintError(const char *op)
     printf("%s failed!! Error: %s\n", op, error);
 }
 
-void TestList()
-{
-    length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    numbers = alloca(sizeof(int)*length);
-    GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
+#define TEST_LIST_TYPE(TYPE)  TestListType(TYPE, #TYPE)
 
+void TestListType(ListType type, const char* typename)
+{
+    printf("TestList type %s begins\n", typename);
     List l;
-    if (!TestListInit(&l, LT_DLS)) {
+    if (!TestListInit(&l, type)) {
         PrintError("TestListInit");
         return;
     }
@@ -399,5 +356,15 @@ void TestList()
         return;
     }
     else
-        printf("TestList passed!!\n");
+        printf("TestList type %s passed!!\n\n", typename);
+}
+
+void TestList()
+{
+    length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
+    numbers = alloca(sizeof(int)*length);
+    GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
+
+    TEST_LIST_TYPE(LT_DLS);
+    TEST_LIST_TYPE(LT_DLNS);
 }
