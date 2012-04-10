@@ -21,25 +21,25 @@ VerifyListConsistency(List *list)
     int i;    
     ListItor itor = ListHead(list);
     for (i = 0; i < length; i++) {                        
-        if (ListValue(list, itor) != numbers[i]) {                   
+        if (ListValue(itor) != numbers[i]) {                   
             sprintf(error, "Encounter wrong data [i:%d/%d] when walking from the head to the tail", i, length-1); 
             return false;
         }                                               
-        itor = ListNext(list, itor);
+        itor = ListItorNext(itor);
     }                                                   
-    if (!ListItorNull(list, itor)) {                                     
+    if (!ListItorNull(itor)) {                                     
         sprintf(error, "List has more elements at the end then numbers");                                
         return false;                                   
     }                                                   
     itor = ListTail(list);
     for (i = length-1; i >= 0; i--) {                      
-        if (ListValue(list, itor) != numbers[i]) {                   
+        if (ListValue(itor) != numbers[i]) {                   
             sprintf(error, "Encounter wrong data [i:%d/%d] when walking from the tail to the head", i, length-1); 
             return false; 
         }
-        itor = ListPrev(list, itor);
+        itor = ListItorPrev(itor);
     }
-    if (!ListItorNull(list, itor)) {
+    if (!ListItorNull(itor)) {
         sprintf(error, "List has more elements at the begining then numbers");                                
         return false; 
     } 
@@ -124,9 +124,9 @@ bool TestListInsertBefore(List *list)
 
     ListItor itor = ListTail(list);
     for (i = 0; i < k-1; i++)
-        itor = ListPrev(list, itor);
+        itor = ListItorPrev(itor);
     for (i = k; i < length - k; i++)
-        if (!ListInsertBefore(list, itor, numbers[i])) {
+        if (!ListInsertBefore(itor, numbers[i])) {
             sprintf(error, "ListInsertBefore failed");
             return false;
         }
@@ -154,9 +154,9 @@ bool TestListInsertAfter(List *list)
 
     ListItor itor = ListHead(list);
     for (i = 0; i < k-1; i++)
-        itor = ListNext(list, itor);
+        itor = ListItorNext(itor);
     for (i = length - k - 1; i >= k; i--)
-        if (!ListInsertAfter(list, itor, numbers[i])) {
+        if (!ListInsertAfter(itor, numbers[i])) {
             sprintf(error, "ListInsertAfter failed");
             return false;
         }
@@ -179,14 +179,14 @@ TestListDelete(List *list)
     ListItor itor;
 
     /* Delete last element */
-    if (!ListDelete(list, ListTail(list))) {
+    if (!ListDelete(ListTail(list))) {
         sprintf(error, "Delete the first element failed");
         return false;
     }
     itor = ListTail(list);
-    if (ListValue(list, itor) != numbers[length-2]
-            || !ListItorNull(list, ListNext(list, itor))
-            || ListValue(list, ListPrev(list, itor)) != numbers[length-3]) {
+    if (ListValue(itor) != numbers[length-2]
+            || !ListItorNull(ListItorNext(itor))
+            || ListValue(ListItorPrev(itor)) != numbers[length-3]) {
         sprintf(error, "Data is not consistent after deleting the first element");
         return false;
     }
@@ -196,59 +196,59 @@ TestListDelete(List *list)
     int i;
     itor = ListHead(list);
     for (i = 0; i < k; i++) 
-        itor = ListNext(list, itor);
+        itor = ListItorNext(itor);
 
-    if (ListValue(list, itor) != numbers[k] 
-            || ListValue(list, ListPrev(list, itor)) != numbers[k-1]
-            || ListValue(list, ListNext(list, itor)) != numbers[k+1]) {
+    if (ListValue(itor) != numbers[k] 
+            || ListValue(ListItorPrev(itor)) != numbers[k-1]
+            || ListValue(ListItorNext(itor)) != numbers[k+1]) {
         sprintf(error, "Test code's assumption is wrong!!");
         return false;
     }
 
-    if (!ListDelete(list, itor)) {
+    if (!ListDelete(itor)) {
         sprintf(error, "ListDelete failed!!");
         return false;
     }
     itor = ListHead(list);
     for (i = 0; i < k; i++)
-        itor = ListNext(list, itor);
-    if (ListValue(list, itor) != numbers[k+1]
-            || ListValue(list, ListPrev(list, itor)) != numbers[k-1]) {
+        itor = ListItorNext(itor);
+    if (ListValue(itor) != numbers[k+1]
+            || ListValue(ListItorPrev(itor)) != numbers[k-1]) {
         sprintf(error, "Data is not consistent after deleting the %dth element", k);
         return false;
     }
 
     /* Delete the first */
-    if (!ListDelete(list, ListHead(list))) {
+    if (!ListDelete(ListHead(list))) {
         sprintf(error, "Delete the first element failed");
         return false;
     }
     itor = ListHead(list);
-    if (ListValue(list, itor) != numbers[1] 
-            || !ListItorNull(list, ListPrev(list, itor))
-            || ListValue(list, ListNext(list, itor)) != numbers[2]) {
+    if (ListValue(itor) != numbers[1] 
+            || !ListItorNull(ListItorPrev(itor))
+            || ListValue(ListItorNext(itor)) != numbers[2]) {
         sprintf(error, "Data is not consistent after deleting the first element");
         return false;
     }
 
     /* Delete all the rest */
     for (i = 0; i < 10; i++)
-        if (!ListDelete(list, ListPrev(list, ListTail(list)))) {
+        if (!ListDelete(ListItorPrev(ListTail(list)))) {
             sprintf(error, "Delete the last 2nd element failed when cleaning up");
             return false;
         }
     for (; i < 20; i++)
-        if (!ListDelete(list, ListNext(list, ListHead(list)))) {
+        if (!ListDelete(ListItorNext(ListHead(list)))) {
             sprintf(error, "Delete the 2nd element failed when cleaning up");
             return false;
         }
     for (; i < length - 40; i++)
-        if (!ListDelete(list, ListTail(list))) {
+        if (!ListDelete(ListTail(list))) {
             sprintf(error, "Delete the last element failed when cleaning up");
             return false;
         }
     for (; i < length - 3; i++)
-        if (!ListDelete(list, ListHead(list))) {
+        if (!ListDelete(ListHead(list))) {
             sprintf(error, "Delete the first element failed when cleaning up");
             return false;
         }
@@ -269,16 +269,16 @@ TestListSearch(List *list)
     for (i = 0; i < length; i++)
         ListAppend(list, numbers[i]);
     for (i = length - 1; i >= 0; i--)
-        if (ListItorNull(list, ListSearch(list, numbers[i])) ||
-                ListValue(list, ListSearch(list, numbers[i])) != numbers[i]) {
+        if (ListItorNull(ListSearch(list, numbers[i])) ||
+                ListValue(ListSearch(list, numbers[i])) != numbers[i]) {
             sprintf(error, "Cannot find existing element [%d]", i);
             return false;
         }
-    if (!ListItorNull(list, ListSearch(list, TestMaxValue + 1))) {
+    if (!ListItorNull(ListSearch(list, TestMaxValue + 1))) {
         sprintf(error, "Found nonexisting element - bigger than max");
         return false;
     }
-    if (!ListItorNull(list, ListSearch(list, TestMinValue - 1))) {
+    if (!ListItorNull(ListSearch(list, TestMinValue - 1))) {
         sprintf(error, "Found nonexisting element - smaller than min");
         return false;
     }
@@ -294,11 +294,11 @@ TestListSetValue(List *list)
         ListAppend(list, 0);
     ListItor itor = ListHead(list);
     for (i = 0; i < length; i++) {
-        if (!ListSetValue(list, itor, numbers[i])) {
+        if (!ListSetValue(itor, numbers[i])) {
             sprintf(error, "ListSetValue failed [%d]", i);
             return false;
         }
-        itor = ListNext(list, itor);
+        itor = ListItorNext(itor);
     }
     if (!VerifyListConsistency(list)) {
         sprintf(error, "Data is wrong after set value - %s", error);

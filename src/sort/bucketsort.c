@@ -47,9 +47,9 @@ BucketSortArray(int *a, int begin, int end)
     int count = 0;
     for (i = 0; i < len; i++) {
         ListItor itor = ListHead(&bucket[i]);
-        while (!ListItorNull(&bucket[i], itor)) {
-            a[begin + count++] = ListValue(&bucket[i], itor);
-            itor = ListNext(&bucket[i], itor);
+        while (!ListItorNull(itor)) {
+            a[begin + count++] = ListValue(itor);
+            itor = ListItorNext(itor);
         }
     }
 }
@@ -59,17 +59,17 @@ void
 InsertionSortList(List *listp)
 {
     ListItor itor = ListHead(listp);
-    while (!ListItorNull(listp, itor)) {
-        ListItor before = ListPrev(listp, itor);
-        int value = ListValue(listp, itor);
-        while (!ListItorNull(listp, before) && ListValue(listp, before) > value) {
-            ListSetValue(listp, ListNext(listp, before), ListValue(listp, before));
-            before = ListPrev(listp, before);
+    while (!ListItorNull(itor)) {
+        ListItor before = ListItorPrev(itor);
+        int value = ListValue(itor);
+        while (!ListItorNull(before) && ListValue(before) > value) {
+            ListSetValue(ListItorNext(before), ListValue(before));
+            before = ListItorPrev(before);
         }
-        if (!ListItorNull(listp, before)) 
-            ListSetValue(listp, ListNext(listp, before), value);
+        if (!ListItorNull(before)) 
+            ListSetValue(ListItorNext(before), value);
         else
-            ListSetValue(listp, ListHead(listp), value);
-        itor = ListNext(listp, itor);
+            ListSetValue(ListHead(listp), value);
+        itor = ListItorNext(itor);
     }
 }

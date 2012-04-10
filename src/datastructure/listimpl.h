@@ -10,8 +10,8 @@
         ItorNull, \
         Head, \
         Tail, \
-        Next, \
-        Prev, \
+        ItorNext, \
+        ItorPrev, \
         Prepend, \
         Append, \
         InsertBefore, \
@@ -23,20 +23,20 @@
         Value) \
     TYPEDEF bool Init(List *listp); \
     TYPEDEF bool Free(List *listp); \
-    TYPEDEF bool ItorNull(List *listp, ListItor itor); \
+    TYPEDEF bool ItorNull(ListItor itor); \
     TYPEDEF ListItor Head(List *listp); \
     TYPEDEF ListItor Tail(List *listp); \
-    TYPEDEF ListItor Next(List *listp, ListItor itor); \
-    TYPEDEF ListItor Prev(List *listp, ListItor itor); \
+    TYPEDEF ListItor ItorNext(ListItor itor); \
+    TYPEDEF ListItor ItorPrev(ListItor itor); \
     TYPEDEF bool Prepend(List *listp, int value); \
     TYPEDEF bool Append(List *listp, int value); \
-    TYPEDEF bool InsertBefore(List *listp, ListItor itor, int value); \
-    TYPEDEF bool InsertAfter(List *listp, ListItor itor, int value); \
-    TYPEDEF bool Delete(List *listp, ListItor itor); \
+    TYPEDEF bool InsertBefore(ListItor itor, int value); \
+    TYPEDEF bool InsertAfter(ListItor itor, int value); \
+    TYPEDEF bool Delete(ListItor itor); \
     TYPEDEF bool DeleteAll(List *listp); \
     TYPEDEF ListItor Search(List *listp, int value); \
-    TYPEDEF bool SetValue(List *listp, ListItor itor, int value); \
-    TYPEDEF int Value(List *listp, ListItor itor);
+    TYPEDEF bool SetValue(ListItor itor, int value); \
+    TYPEDEF int Value(ListItor itor);
 
 #define DECLARE_FUNCTIONS(LIST_TYPE) \
     API_PROTOTYPE(, \
@@ -45,8 +45,8 @@
             LIST_TYPE ## ItorNull, \
             LIST_TYPE ## Head, \
             LIST_TYPE ## Tail, \
-            LIST_TYPE ## Next, \
-            LIST_TYPE ## Prev, \
+            LIST_TYPE ## ItorNext, \
+            LIST_TYPE ## ItorPrev, \
             LIST_TYPE ## Prepend, \
             LIST_TYPE ## Append, \
             LIST_TYPE ## InsertBefore, \
@@ -64,8 +64,8 @@ API_PROTOTYPE(typedef,
         (*ItorNullPtr), 
         (*HeadPtr), 
         (*TailPtr), 
-        (*NextPtr), 
-        (*PrevPtr), 
+        (*ItorNextPtr), 
+        (*ItorPrevPtr), 
         (*PrependPtr), 
         (*AppendPtr),
         (*InsertBeforePtr), 
@@ -92,8 +92,8 @@ DECLARE_FUNCTIONS(DLNSList)
     DEFINE_FUNCTION_TABLE(ItorNull) \
     DEFINE_FUNCTION_TABLE(Head) \
     DEFINE_FUNCTION_TABLE(Tail) \
-    DEFINE_FUNCTION_TABLE(Next) \
-    DEFINE_FUNCTION_TABLE(Prev) \
+    DEFINE_FUNCTION_TABLE(ItorNext) \
+    DEFINE_FUNCTION_TABLE(ItorPrev) \
     DEFINE_FUNCTION_TABLE(Prepend) \
     DEFINE_FUNCTION_TABLE(Append) \
     DEFINE_FUNCTION_TABLE(InsertBefore) \
