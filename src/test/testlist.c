@@ -367,4 +367,5 @@ void TestList()
 
     TEST_LIST_TYPE(LT_DLS);
     TEST_LIST_TYPE(LT_DLNS);
+    TEST_LIST_TYPE(LT_DLA);
 }

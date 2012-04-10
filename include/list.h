@@ -11,6 +11,7 @@ typedef enum ListType
 {
     LT_DLS = 0, // DoubleLinkedSentinel 
     LT_DLNS, // DoubleLinkedNoSentinel
+    LT_DLA, // DoubleLinkedArray
 } ListType;
 
 struct List;
@@ -29,7 +30,8 @@ typedef struct
 typedef struct List
 {
     ListType type;
-    ListItor head_tail[2];
+    ListItor head_itor;
+    ListItor tail_itor;
 } List;
 
 

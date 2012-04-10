@@ -78,11 +78,13 @@ API_PROTOTYPE(typedef,
 
 DECLARE_FUNCTIONS(DLSList)
 DECLARE_FUNCTIONS(DLNSList)
+DECLARE_FUNCTIONS(DLAList)
 
 #define DEFINE_FUNCTION_TABLE(op) \
     static op ## Ptr op ## Table[] = { \
         & DLSList ## op, \
         & DLNSList ## op, \
+        & DLAList ## op, \
         NULL \
     };
 
@@ -104,13 +106,16 @@ DECLARE_FUNCTIONS(DLNSList)
     DEFINE_FUNCTION_TABLE(SetValue) \
     DEFINE_FUNCTION_TABLE(Value)
 
-/* DLS types */
+// Node type for DLS and DLNS 
 typedef struct ListNode
 {
     int value;
     struct ListNode *prev;
     struct ListNode *next;
 } ListNode;
+
+// prototypes for DLA
+#define LIST_POOL_CAPACITY 8192
 
 #define UNUSED(p) ((void)(p))
 
