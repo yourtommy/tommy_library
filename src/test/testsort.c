@@ -16,13 +16,13 @@ static const int TestMaxArrayLen = 120;
 static const int TestMinValue = -58000;
 static const int TestMaxValue = 58000;
 
-bool IsArraySorted(int *a, int begin, int end)
+int UnsortedIndex(int *a, int begin, int end)
 {
-    int *p;
-    for (p = a + begin + 1; p < a + end; p++)
-        if (*p < *(p-1))
-            return false;
-    return true;
+    int i;
+    for (i = begin + 1; i < end; i++)
+        if (a[i] < a[i-1])
+            return i;
+    return -1;
 }
 
 
@@ -54,11 +54,16 @@ TestSortArray(void (*sortp)(int *, int, int),
     int *numbers = alloca(sizeof(int)*length);
     memcpy(numbers, a, sizeof(int)*length);
 
+#ifdef TRACE
     PrintArrayInt("Before sort", numbers, length);
+#endif
     (*sortp)(numbers, begin, end);
+#if TRACE
     PrintArrayInt("After sort", numbers, length);
-    if (!IsArraySorted(numbers, begin, end)) {
-        printf("Error: Array is not sorted!!\n");
+#endif
+    int unsorted = -1;
+    if ((unsorted = UnsortedIndex(numbers, begin, end) != -1)) {
+        printf("Error: Array is not sorted [%d]!!\n", unsorted);
         return;
     }
     
@@ -67,13 +72,8 @@ TestSortArray(void (*sortp)(int *, int, int),
         printf("Error: Element %d (index %d) is missing!!\n", numbers[missing], missing);
         return;
     }
+    printf("Sort successful!!\n");
 }
-
-void CountingSortArrayWithDefaultRange(int *a, int begin, int end)
-{
-    CountingSortArray(a, begin, end, TestMinValue, TestMaxValue);
-}
-
 
 void
 TestSort(void)
@@ -89,6 +89,7 @@ TestSort(void)
     TEST_SORT_ARRAY(MergeSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(HeapSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(QuickSortArray, numbers, length, begin, end);
-    TEST_SORT_ARRAY(CountingSortArrayWithDefaultRange, numbers, length, begin, end);
+    TEST_SORT_ARRAY(CountingSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(RadixSortArray, numbers, length, begin, end);
+    TEST_SORT_ARRAY(BucketSortArray, numbers, length, begin, end);
 }

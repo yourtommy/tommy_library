@@ -4,5 +4,7 @@
 void CountingSortArrayWithConvert(int *a, int begin, int end, 
         int min, int max, int (*convert)(int));
 
+#define UNUSED(p) (void)(p)
+
 #endif
 

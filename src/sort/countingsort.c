@@ -7,8 +7,17 @@
 
 
 void
-CountingSortArray(int *a, int begin, int end, int min, int max)
+CountingSortArray(int *a, int begin, int end)
 {
+    int min, max;
+    min = max = a[begin];
+    int i;
+    for (i = begin + 1; i < end; i++) {
+        if (a[i] < min)
+            min = a[i];
+        else if (a[i] > max)
+            max = a[i];
+    }
     CountingSortArrayWithConvert(a, begin, end, min, max, 0);
 }
 
