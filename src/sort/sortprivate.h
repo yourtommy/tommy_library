@@ -4,6 +4,8 @@
 void CountingSortArrayWithConvert(int *a, int begin, int end, 
         int min, int max, int (*convert)(int));
 
+int Partition(int *a, int begin, int end);
+
 #define UNUSED(p) (void)(p)
 
 #endif

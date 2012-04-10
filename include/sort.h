@@ -13,5 +13,9 @@ void CountingSortArray(int *a, int begin, int end);
 void RadixSortArray(int *a, int begin, int end);
 void BucketSortArray(int *a, int begin, int end);
 
+
+/* Select the n'th smallest element*/
+int Select(int *a, int begin, int end, int n);
+
 #endif
 

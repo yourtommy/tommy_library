@@ -76,6 +76,25 @@ TestSortArray(void (*sortp)(int *, int, int),
 }
 
 void
+TestSelectArray(int *a, int begin, int end)
+{
+    int *sorted = alloca(sizeof(int)*(end - begin));
+    memcpy(sorted, a+begin, sizeof(int)*(end-begin));
+    QuickSortArray(sorted, 0, end-begin);
+
+    int testk[] = {1, 5, end/2, end-begin-6, end-begin};
+    unsigned int i;
+    for (i = 0; i < sizeof(testk)/sizeof(testk[0]); i++) {
+        int k = testk[i];
+        int n = Select(a, begin, end, k); // find the 5th
+        if (n == sorted[k-1]) 
+            printf("Select %d'th successful!!\n", k);
+        else
+            printf("Select %d'th failed!!\n", k);
+    }    
+}
+
+void
 TestSort(void)
 {
     unsigned length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
@@ -92,4 +111,6 @@ TestSort(void)
     TEST_SORT_ARRAY(CountingSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(RadixSortArray, numbers, length, begin, end);
     TEST_SORT_ARRAY(BucketSortArray, numbers, length, begin, end);
+
+    TestSelectArray(numbers, begin, end);
 }
