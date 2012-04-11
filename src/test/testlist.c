@@ -13,7 +13,7 @@ static const int TestMaxValue = 58292;
 
 static int length;
 static int *numbers;
-char error[1024] = "";
+char error[1024];
 
 bool 
 VerifyListConsistency(List *list)

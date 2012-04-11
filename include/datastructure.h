@@ -4,6 +4,7 @@
 #include "stack.h"
 #include "queue.h"
 #include "list.h"
+#include "tree.h"
 
 #endif
 
