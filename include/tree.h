@@ -18,6 +18,8 @@ typedef struct BinaryTree
     BinaryTreeItor root_itor;
 } BinaryTree;
 
+extern BinaryTreeItor BTNullItor;
+
 /*********************************** 
  * Must init a tree before using it.
  **********************************/
@@ -42,9 +44,8 @@ BinaryTreeItor BTRoot(BinaryTree *treep);
 /***********************************
  * Set the root of a binary tree with value. 
  * It will fail if the tree is not empty. 
- * Return the root that is just set.
  ***********************************/
-BinaryTreeItor BTSetRoot(BinaryTree *treep, int value);
+bool BTAddRoot(BinaryTree *treep, int value);
 
 /***********************************
  * After freeing a tree you must init
@@ -58,14 +59,31 @@ bool BTDeleteAll(BinaryTree *treep);
 bool BTINull(BinaryTreeItor itor);
 
 /***********************************
+ * Check whether itor1 equals to itor2.
+ ***********************************/
+bool BTIEqual(BinaryTreeItor itor1, BinaryTreeItor itor2);
+
+/***********************************
  * Return the left child of a binary tree itor.
  ***********************************/
 BinaryTreeItor BTILeftChild(BinaryTreeItor itor);
 
 /***********************************
+ * Add a left child to itor.
+ * It will fail if itor already has a left child.
+ ***********************************/
+bool BTIAddLeftChild(BinaryTreeItor itor, int value);
+
+/***********************************
  * Return the right child of a binary tree itor.
  ***********************************/
 BinaryTreeItor BTIRightChild(BinaryTreeItor itor);
+
+/***********************************
+ * Add a right child to itor.
+ * It will fail if itor already has a right child.
+ ***********************************/
+bool BTIAddRightChild(BinaryTreeItor itor, int value);
 
 /***********************************
  * Return the parent of a binary tree itor.
@@ -83,10 +101,24 @@ int BTIValue(BinaryTreeItor itor);
 bool BTISetValue(BinaryTreeItor itor, int value);
 
 /***********************************
- * Delete the node pointed by itor.
+ * Delete itor and all its descendants.
  * Cannot use the itor after deleting it.
  ***********************************/
 bool BTIDelete(BinaryTreeItor itor);
+
+/***********************************
+ * Move itor with its descendants
+ * to be the left child of dest.
+ * It will fail if dest already has a left child.
+ ***********************************/
+bool BTIMoveAsLeftChild(BinaryTreeItor itor, BinaryTreeItor dest);
+
+/***********************************
+ * Move itor with its descendants
+ * to be the right child of dest.
+ * It will fail if dest already has a right child.
+ ***********************************/
+bool BTIMoveAsRightChild(BinaryTreeItor itor, BinaryTreeItor dest);
 
 #endif
 
