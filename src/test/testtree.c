@@ -75,7 +75,7 @@ bool TestBTAddRoot(BinaryTree *btp)
         sprintf(error, "The value of root is not correct after BTAddRoot");
         return false;
     }
-    if (VerifyBTINullChildren(itor, "root that is first time added")) {
+    if (!VerifyBTINullChildren(itor, "root that is first time added")) {
         return false;
     }
     return true;

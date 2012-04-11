@@ -65,8 +65,9 @@ endif
 #else
 #  INPUTSUFFIX=.a
 #endif 
-release:INPUTLIBS=$(foreach name,${INPUTNAMES},-l${name})
-debug:INPUTLIBS=$(foreach name,${INPUTNAMES},-l${name}d)
+INPUTLIBS=$(foreach name,${INPUTNAMES},-l${name})
+release:INPUTLIBS+=$(foreach name,${INPUTNAMES_SUFFIX},-l${name})
+debug:INPUTLIBS+=$(foreach name,${INPUTNAMES_SUFFIX},-l${name}d)
 
 
 ifndef OUTTYPE

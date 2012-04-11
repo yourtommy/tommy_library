@@ -1,20 +1,21 @@
 #include "tree.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 #define UNUSED(p)       (void)(p)
+#define INFINITY        (int)((~(unsigned)0) >> 1)
 
 BinaryTreeItor BTNullItor = {
-    .parent_p = NULL,
-    .left_child_p = NULL,
-    .right_child_p = NULL,
+    .ptr = NULL,
     .tree_p = NULL,
 };
 
 bool BTInit(BinaryTree *treep)
 {
-    // TODO
-    UNUSED(treep);
-    return false;
+    if (treep == NULL)
+        return false;
+    treep->root_itor = BTNullItor;
+    return true;
 }
 
 bool BTFree(BinaryTree *treep)
@@ -26,24 +27,27 @@ bool BTFree(BinaryTree *treep)
 
 bool BTEmpty(BinaryTree *treep)
 {
-    // TODO
-    UNUSED(treep);
-    return false;
+    return treep == NULL || BTINull(treep->root_itor);
 }
 
 BinaryTreeItor BTRoot(BinaryTree *treep)
 {
-    // TODO
-    UNUSED(treep);
-    return BTNullItor;
+    return treep->root_itor;
 }
 
 bool BTAddRoot(BinaryTree *treep, int value)
 {
-    // TODO
-    UNUSED(treep);
-    UNUSED(value);
-    return false;
+    BinaryTreeNode *node_p = malloc(sizeof(BinaryTreeNode));
+    node_p->parent_p = NULL;
+    node_p->left_child_p = NULL;
+    node_p->right_child_p = NULL;
+    node_p->value = value;
+
+    treep->root_itor = (BinaryTreeItor) {
+        .ptr = node_p,
+        .tree_p = treep,
+    };
+    return true;
 }
 
 bool BTDeleteAll(BinaryTree *treep)
@@ -55,24 +59,22 @@ bool BTDeleteAll(BinaryTree *treep)
 
 bool BTINull(BinaryTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return false;
+    return itor.tree_p == NULL || itor.ptr == NULL;
 }
 
 bool BTIEqual(BinaryTreeItor itor1, BinaryTreeItor itor2)
 {
-    // TODO
-    UNUSED(itor1);
-    UNUSED(itor2);
-    return false;
+    return itor1.ptr == itor2.ptr && itor1.tree_p == itor2.tree_p;
 }
 
 BinaryTreeItor BTILeftChild(BinaryTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return BTNullItor;
+    if (BTINull(itor))
+        return BTNullItor;
+    return (BinaryTreeItor) {
+        .ptr = itor.ptr->left_child_p,
+        .tree_p = itor.tree_p,
+    };
 }
 
 bool BTIAddLeftChild(BinaryTreeItor itor, int value)
@@ -85,9 +87,12 @@ bool BTIAddLeftChild(BinaryTreeItor itor, int value)
 
 BinaryTreeItor BTIRightChild(BinaryTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return BTNullItor;
+    if (BTINull(itor))
+        return BTNullItor;
+    return (BinaryTreeItor) {
+        .ptr = itor.ptr->right_child_p,
+        .tree_p = itor.tree_p,
+    };
 }
 
 bool BTIAddRightChild(BinaryTreeItor itor, int value)
@@ -107,9 +112,9 @@ BinaryTreeItor BTIParent(BinaryTreeItor itor)
 
 int BTIValue(BinaryTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return false;
+    if (BTINull(itor))
+        return INFINITY;
+    return itor.ptr->value;
 }
 
 bool BTISetValue(BinaryTreeItor itor, int value)
@@ -122,9 +127,16 @@ bool BTISetValue(BinaryTreeItor itor, int value)
 
 bool BTIDelete(BinaryTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return false;
+    if (BTINull(itor))
+        return true;
+    if (!BTIDelete(BTILeftChild(itor)))
+        return false;
+    if (!BTIDelete(BTIRightChild(itor)))
+        return false;
+    if (BTIEqual(itor, itor.tree_p->root_itor))
+        itor.tree_p->root_itor = BTNullItor;
+    free(itor.ptr);
+    return true;
 }
 
 bool BTIMoveAsLeftChild(BinaryTreeItor itor, BinaryTreeItor dest)

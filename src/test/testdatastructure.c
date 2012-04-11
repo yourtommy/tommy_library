@@ -6,4 +6,5 @@ TestDataStructure()
     TestStack();
     TestQueue();
     TestList();
+    TestTree();
 }

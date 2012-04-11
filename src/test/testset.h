@@ -6,6 +6,7 @@ void TestDataStructure();
 void TestStack();
 void TestQueue();
 void TestList();
+void TestTree();
 
 #endif
 

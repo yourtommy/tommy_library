@@ -5,11 +5,17 @@
 
 struct BinaryTree;
 
+typedef struct BinaryTreeNode
+{
+    struct BinaryTreeNode *parent_p;
+    struct BinaryTreeNode *left_child_p;
+    struct BinaryTreeNode *right_child_p;
+    int value;
+} BinaryTreeNode;
+
 typedef struct BinaryTreeItor
 {
-    struct BinaryTreeItor *parent_p;
-    struct BinaryTreeItor *left_child_p;
-    struct BinaryTreeItor *right_child_p;
+    struct BinaryTreeNode *ptr;
     struct BinaryTree *tree_p;
 } BinaryTreeItor;
 
