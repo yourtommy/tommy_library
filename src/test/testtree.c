@@ -130,15 +130,15 @@ bool TestBTLeftChild(BinaryTree *btp)
             sprintf(error, "Itor already has a left child, but we can still add a left child to it");
             return false;
         }
-        if (VerifyBTINullRightChild(itor, "itor that just has a new left child")) {
+        if (!VerifyBTINullRightChild(itor, "itor that just has a new left child")) {
             return false;
         }
-        BinaryTreeItor left_itor = BTILeftChild(left_itor);
+        BinaryTreeItor left_itor = BTILeftChild(itor);
         if (BTINull(left_itor)) {
             sprintf(error, "Left child is still null after adding a left child");
             return false;
         }
-        if (VerifyBTINullChildren(left_itor, "newly added left child")) {
+        if (!VerifyBTINullChildren(left_itor, "newly added left child")) {
             return false;
         }
         if (!BTIEqual(BTIParent(left_itor), itor)) {
@@ -164,11 +164,12 @@ bool TestBTLeftChild(BinaryTree *btp)
             sprintf(error, "A left child that should exist is gone [%d]", i);
             return false;
         }
-        if (BTIValue(itor)) {
+        if (BTIValue(itor) != numbers[i]) {
             sprintf(error, "A left child's value is wrong [%d]", i);
             return false;
         }
     }
+    itor = BTILeftChild(itor);
     if (!BTINull(itor)) {
         sprintf(error, "Tree has more nodes than numbers");
         return false;
@@ -185,7 +186,7 @@ bool TestBTLeftChild(BinaryTree *btp)
             sprintf(error, "BTIDelete failed");
             return false;
         }
-        if (VerifyBTINullChildren(parent, "node whose left child was just deleted"))
+        if (!VerifyBTINullChildren(parent, "node whose left child was just deleted"))
             return false;
         itor = parent;
         deleted++;
@@ -220,15 +221,15 @@ bool TestBTRightChild(BinaryTree *btp)
             sprintf(error, "Itor already has a right child, but we can still add a right child to it");
             return false;
         }
-        if (VerifyBTINullLeftChild(itor, "itor that just has a new right child")) {
+        if (!VerifyBTINullLeftChild(itor, "itor that just has a new right child")) {
             return false;
         }
-        BinaryTreeItor right_itor = BTIRightChild(right_itor);
+        BinaryTreeItor right_itor = BTIRightChild(itor);
         if (BTINull(right_itor)) {
             sprintf(error, "Right child is still null after adding a right child");
             return false;
         }
-        if (VerifyBTINullChildren(right_itor, "newly added right child")) {
+        if (!VerifyBTINullChildren(right_itor, "newly added right child")) {
             return false;
         }
         if (!BTIEqual(BTIParent(right_itor), itor)) {
@@ -254,11 +255,12 @@ bool TestBTRightChild(BinaryTree *btp)
             sprintf(error, "A right child that should exist is gone [%d]", i);
             return false;
         }
-        if (BTIValue(itor)) {
+        if (BTIValue(itor) != numbers[i]) {
             sprintf(error, "A right child's value is wrong [%d]", i);
             return false;
         }
     }
+    itor = BTIRightChild(itor);
     if (!BTINull(itor)) {
         sprintf(error, "Tree has more nodes than numbers");
         return false;
@@ -275,7 +277,7 @@ bool TestBTRightChild(BinaryTree *btp)
             sprintf(error, "BTIDelete failed");
             return false;
         }
-        if (VerifyBTINullChildren(parent, "node whose right child was just deleted"))
+        if (!VerifyBTINullChildren(parent, "node whose right child was just deleted"))
             return false;
         itor = parent;
         deleted++;
@@ -317,14 +319,14 @@ bool TestBTBothChildren(BinaryTree *btp)
                     sprintf(error, "BTIAddLeftChild failed [%d]", i);
                     return false;
                 }
-                itor_queue[qtail++] = itor; // Enqueue
+                itor_queue[qtail++] = BTILeftChild(itor); // Enqueue
                 added = true;
             } else if (BTINull(BTIRightChild(itor))) {
                 if (!BTIAddRightChild(itor, value)) {
                     sprintf(error, "BTIAddRightChild failed [%d]", i);
                     return false;
                 }
-                itor_queue[qtail++] = itor; // Enqueue
+                itor_queue[qtail++] = BTIRightChild(itor); // Enqueue
                 added = true;
             } else {
                 qhead++; // Dequeue
@@ -356,21 +358,21 @@ bool TestBTBothChildren(BinaryTree *btp)
     // Delete all the nodes we just added from the last layer upwards
     int deleted = 0;
     BinaryTreeItor itor = BTRoot(btp);
-    while (!BTINull(BTIRightChild(itor)))
-        itor = BTIRightChild(itor);
+    while (!BTINull(BTILeftChild(itor)))
+        itor = BTILeftChild(itor);
     while (!BTINull(itor)) {
         BinaryTreeItor parent = BTIParent(itor);
         if (!BTIDelete(itor)) {
             sprintf(error, "BTIDelete failed");
             return false;
         }
-        if (VerifyBTINullChildren(parent, "node whose right child was just deleted"))
+        if (!BTINull(itor) && !VerifyBTINullLeftChild(parent, "node whose left child was just deleted"))
             return false;
         itor = parent;
         deleted++;
     }
-    if (deleted != log2(length) + 1) { // the number of layers
-        sprintf(error, "The number of deleted layers [%d] is different than log2(length) [%d]", deleted, (int)log2(length));
+    if (deleted != (int)log2(length) + 1) { // the number of layers
+        sprintf(error, "The number of deleted layers [%d] is different than log2(length[%d])+1 [%d]", deleted, length, (int)log2(length)+1);
         return false;
     }
 
@@ -403,11 +405,11 @@ bool TestBTDeleteAll(BinaryTree *btp)
             BinaryTreeItor itor = itor_queue[qhead];
             if (BTINull(BTILeftChild(itor))) {
                 BTIAddLeftChild(itor, value); // Already tested
-                itor_queue[qtail++] = itor; // Enqueue
+                itor_queue[qtail++] = BTILeftChild(itor); // Enqueue
                 added = true;
             } else if (BTINull(BTIRightChild(itor))) {
                 BTIAddRightChild(itor, value); // Already tested
-                itor_queue[qtail++] = itor; // Enqueue
+                itor_queue[qtail++] = BTIRightChild(itor); // Enqueue
                 added = true;
             } else {
                 qhead++; // Dequeue
@@ -433,7 +435,8 @@ bool TestBTSetValue(BinaryTree *btp)
         return false;
     }
 
-    BinaryTreeItor itor = BTILeftChild(itor);
+    BTAddRoot(btp, -1);
+    BinaryTreeItor itor = BTRoot(btp);
     // All insert to the left
     int i;
     for (i = 1; i < length; i++) {
@@ -444,7 +447,7 @@ bool TestBTSetValue(BinaryTree *btp)
     itor = BTRoot(btp);
     i = 0;
     while (!BTINull(itor)) {
-        if (BTISetValue(itor, numbers[i])) {
+        if (!BTISetValue(itor, numbers[i])) {
             sprintf(error, "BTISetValue failed [%d]", i);
             return false;
         }

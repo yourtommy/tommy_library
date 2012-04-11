@@ -52,9 +52,9 @@ bool BTAddRoot(BinaryTree *treep, int value)
 
 bool BTDeleteAll(BinaryTree *treep)
 {
-    // TODO
-    UNUSED(treep);
-    return false;
+    if (treep == NULL)
+        return false;
+    return BTIDelete(treep->root_itor);
 }
 
 bool BTINull(BinaryTreeItor itor)
@@ -79,10 +79,14 @@ BinaryTreeItor BTILeftChild(BinaryTreeItor itor)
 
 bool BTIAddLeftChild(BinaryTreeItor itor, int value)
 {
-    // TODO
-    UNUSED(itor);
-    UNUSED(value);
-    return false;
+    if (BTINull(itor) || !BTINull(BTILeftChild(itor)))
+        return false;
+    BinaryTreeNode *nodep = malloc(sizeof(BinaryTreeNode));
+    nodep->parent_p = itor.ptr;
+    nodep->left_child_p = nodep->right_child_p = NULL;
+    nodep->value = value;
+    itor.ptr->left_child_p = nodep;
+    return true;
 }
 
 BinaryTreeItor BTIRightChild(BinaryTreeItor itor)
@@ -97,17 +101,24 @@ BinaryTreeItor BTIRightChild(BinaryTreeItor itor)
 
 bool BTIAddRightChild(BinaryTreeItor itor, int value)
 {
-    // TODO
-    UNUSED(itor);
-    UNUSED(value);
-    return false;
+    if (BTINull(itor) || !BTINull(BTIRightChild(itor)))
+        return false;
+    BinaryTreeNode *nodep = malloc(sizeof(BinaryTreeNode));
+    nodep->parent_p = itor.ptr;
+    nodep->left_child_p = nodep->right_child_p = NULL;
+    nodep->value = value;
+    itor.ptr->right_child_p = nodep;
+    return true;
 }
 
 BinaryTreeItor BTIParent(BinaryTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return BTNullItor;
+    if (BTINull(itor))
+        return BTNullItor;
+    return (BinaryTreeItor) {
+        .ptr = itor.ptr->parent_p,
+        .tree_p = itor.tree_p,
+    };
 }
 
 int BTIValue(BinaryTreeItor itor)
@@ -119,10 +130,10 @@ int BTIValue(BinaryTreeItor itor)
 
 bool BTISetValue(BinaryTreeItor itor, int value)
 {
-    // TODO
-    UNUSED(itor);
-    UNUSED(value);
-    return false;
+    if (BTINull(itor))
+        return false;
+    itor.ptr->value = value;
+    return true;
 }
 
 bool BTIDelete(BinaryTreeItor itor)
@@ -133,8 +144,13 @@ bool BTIDelete(BinaryTreeItor itor)
         return false;
     if (!BTIDelete(BTIRightChild(itor)))
         return false;
-    if (BTIEqual(itor, itor.tree_p->root_itor))
+    if (itor.ptr->parent_p == NULL) // root
         itor.tree_p->root_itor = BTNullItor;
+    else
+        if (itor.ptr == itor.ptr->parent_p->left_child_p)
+            itor.ptr->parent_p->left_child_p = NULL;
+        else
+            itor.ptr->parent_p->right_child_p = NULL;
     free(itor.ptr);
     return true;
 }
