@@ -14,6 +14,10 @@ static int length;
 static int *numbers;
 char error[1024];
 
+// for Binary Sort Tree's test
+static int *walked_array;
+static int walked_count;
+
 bool VerifyBTINullLeftChild(BinaryTreeItor itor, const char *target)
 {
     if (!BTINull(BTILeftChild(itor))) {
@@ -561,12 +565,8 @@ bool TestBTFree(BinaryTree *btp)
     return true;
 }
 
-void TestTree()
+void TestBinaryTree()
 {
-    length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    numbers = alloca(sizeof(int)*length);
-    GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
-
     BinaryTree bt;
     if (!TestBTInit(&bt)) 
         printf("TestBTInit failed. Error: %s\n", error);
@@ -587,5 +587,92 @@ void TestTree()
     else if (!TestBTFree(&bt)) 
         printf("TestBTFree failed. Error: %s\n", error);
     else
-        printf("TestTree successful!!");
+        printf("TestTree successful!!\n");
+}
+
+void WalkBST(int value)
+{
+    walked_count++;
+    if (walked_count > length)
+        return;
+    walked_array[walked_count-1] = value;
+}
+
+void TestBinarySortTree()
+{
+    BinarySortTree bst;
+    if (!BSTInit(&bst)) {
+        printf("BSTInit failed.\n");
+        return;
+    }
+
+    int i;
+    for (i = 0; i < length; i++) {
+        if (!BSTInsert(&bst, numbers[i])) {
+            printf("BSTInsert failed.\n");
+            return;
+        }
+    }
+    
+    // Test sort (inorder walk)
+    walked_array = alloca(sizeof(int) * length);
+    walked_count = 0;
+    if (!BSTInorderWalk(&bst, &WalkBST)) {
+        printf("BSTInorderWalk failed.\n");
+        return;
+    }
+    if (walked_count != length) {
+        printf("The number of BST's values [%d] is different than length [%d].", walked_count, length);
+        return;
+    }
+            
+    int unsorted = -1;
+    if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
+        printf("Error: Tree's values are not sorted [%d] after inorder walk!!\n", unsorted);
+        return;
+    }
+    
+    int missing = -1;
+    if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1) {
+        printf("Error: Element %d (index %d) is missing after inorder walk!!\n", numbers[missing], missing);
+        return;
+    }
+
+    // Test search
+    for (i = 0; i < length; i++) {
+        BinarySortTreeItor itor = BSTSearch(&bst, numbers[i]);
+        if (BSTINull(itor)) {
+            printf("Cannot find value [%d] in tree.", i);
+            return;
+        }
+        if (BSTIValue(itor) != numbers[i]) {
+            printf("Found value from BST is wrong [%d].", i);
+            return;
+        }
+    }
+    if (!BSTINull(BSTSearch(&bst, TestMaxValue+1))) {
+        printf("Found a nonexisting value (bigger than max).");
+        return;
+    }
+    if (!BSTINull(BSTSearch(&bst, TestMinValue-1))) {
+        printf("Found a nonexisting value (smaller than min).");
+        return;
+    }
+
+    if (!BSTFree(&bst)) {
+        printf("BSTFree failed.\n");
+        return;
+    }
+
+    printf("TestBinarySortTree successful!!\n");
+}
+
+void TestTree()
+{
+    length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
+    numbers = alloca(sizeof(int)*length);
+    GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
+
+    TestBinaryTree();
+    TestBinarySortTree();
 }

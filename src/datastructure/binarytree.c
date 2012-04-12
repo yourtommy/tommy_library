@@ -5,7 +5,7 @@
 #define UNUSED(p)       (void)(p)
 #define INFINITY        (int)((~(unsigned)0) >> 1)
 
-BinaryTreeItor BTNullItor = {
+static BinaryTreeItor BTNullItor = {
     .ptr = NULL,
     .tree_p = NULL,
 };

@@ -26,7 +26,8 @@ int UnsortedIndex(int *a, int begin, int end)
 }
 
 
-int FindMissingElement(int *origin, int *sorted, int begin, int end) {
+int FindMissingElement(int *origin, int *sorted, int begin, int end)
+{
     int i;
     for (i = begin; i < end; i++) {
         bool found = false;
@@ -69,7 +70,7 @@ TestSortArray(void (*sortp)(int *, int, int),
     
     int missing = -1;
     if ((missing = FindMissingElement(a, numbers, begin, end)) != -1) {
-        printf("Error: Element %d (index %d) is missing!!\n", numbers[missing], missing);
+        printf("Error: Element %d (index %d) is missing!!\n", a[missing], missing);
         return;
     }
     printf("Sort successful!!\n");

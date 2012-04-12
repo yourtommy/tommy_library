@@ -24,7 +24,23 @@ typedef struct BinaryTree
     BinaryTreeItor root_itor;
 } BinaryTree;
 
-extern BinaryTreeItor BTNullItor;
+typedef struct BinarySortTree
+{
+    BinaryTree bt;
+} BinarySortTree;
+
+typedef struct BinarySortTreeItor
+{
+    BinaryTreeItor bt_itor;
+} BinarySortTreeItor;
+
+typedef void (*TreeWalkerPtr)(int value);
+
+//==================================
+// Binary Tree Functions
+//==================================
+
+// inorder, postorder, preorder
 
 /*********************************** 
  * Must init a tree before using it.
@@ -134,6 +150,57 @@ bool BTIMoveAsLeftChild(BinaryTreeItor itor, BinaryTreeItor dest);
  * or itor is dest's ancestor.
  ***********************************/
 bool BTIMoveAsRightChild(BinaryTreeItor itor, BinaryTreeItor dest);
+
+
+//==================================
+// Binary Sort Tree Functions
+//==================================
+
+/*********************************** 
+ * Must init a tree before using it.
+ **********************************/
+bool BSTInit(BinarySortTree *treep);
+
+/***********************************
+ * After freeing a tree you must init
+ * it again to use it.
+ **********************************/
+bool BSTFree(BinarySortTree *treep);
+
+/***********************************
+ * Check whether a binary sort tree is empty.
+ **********************************/
+bool BSTEmpty(BinarySortTree *treep);
+
+/***********************************
+ * Insert value into treep
+ **********************************/
+bool BSTInsert(BinarySortTree *treep, int value);
+
+/***********************************
+ * Delete itor from its contained BST 
+ **********************************/
+bool BSTDelete(BinarySortTreeItor itor);
+
+/***********************************
+ * Delete itor from its contained BST 
+ **********************************/
+BinarySortTreeItor BSTSearch(BinarySortTree *treep, int value);
+
+/***********************************
+ * Inorder tree walk
+ **********************************/
+bool BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp); 
+
+/***********************************
+ * Return the value of a binary tree itor.
+ ***********************************/
+int BSTIValue(BinarySortTreeItor itor);
+
+/***********************************
+ * Check whether a binrary tree itor is null.
+ ***********************************/
+bool BSTINull(BinarySortTreeItor itor);
 
 #endif
 
