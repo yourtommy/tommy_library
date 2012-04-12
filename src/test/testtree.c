@@ -491,34 +491,35 @@ bool TestBTMove(BinaryTree *btp)
 
     BTIAddLeftChild(left, numbers[0]);
     BinaryTreeItor moved_itor = BTILeftChild(left);
+    BinaryTreeItor itor = moved_itor;
     // All insert to the left
     int i;
     for (i = 1; i < length; i++) {
-        BTIAddLeftChild(moved_itor, -1); // Already tested
-        moved_itor = BTILeftChild(moved_itor);
+        BTIAddLeftChild(itor, numbers[i]); // Already tested
+        itor = BTILeftChild(itor);
     }
     // Move from left's left to right's right
     if (!BTIMoveAsRightChild(moved_itor, right)) {
         sprintf(error, "BTIMoveAsRightChild failed");
         return false;
     }
-    if (!VerifyBTINullChildren(left, "Left node whose left child is just moved"))
+    if (!VerifyBTINullChildren(left, "Left node whose left child is just moved from left's left to right's right"))
         return false;
 
     // Verify moved data
     moved_itor = BTIRightChild(right);
-    BinaryTreeItor itor = moved_itor;
+    itor = moved_itor;
     i = 0;
     while (!BTINull(itor)) {
         if (BTIValue(itor) != numbers[i]) {
-            sprintf(error, "Data is wrong after moving [%d]", i);
+            sprintf(error, "Data is wrong after moving from left's left to right's right [%d]", i);
             return false;
         }
         i++;
         itor = BTILeftChild(itor);
     }
     if (i != length) {
-        sprintf(error, "Node number is smaller [%d] than length [%d] after Moving", i, length);
+        sprintf(error, "Node number is smaller [%d] than length [%d] after moving from left's left to right's right", i, length);
         return false;
     }
 
@@ -528,7 +529,7 @@ bool TestBTMove(BinaryTree *btp)
         sprintf(error, "BTIMoveAsRightChild failed");
         return false;
     }
-    if (!VerifyBTINullRightChild(right, "Right node whose right child is just moved"))
+    if (!VerifyBTINullRightChild(right, "Right node whose right child is just moved from right's left to right's left"))
         return false;
 
     // Verify moved data
@@ -537,14 +538,14 @@ bool TestBTMove(BinaryTree *btp)
     i = 0;
     while (!BTINull(itor)) {
         if (BTIValue(itor) != numbers[i]) {
-            sprintf(error, "Data is wrong after moving [%d]", i);
+            sprintf(error, "Data is wrong after moving from left's right to right's left [%d]", i);
             return false;
         }
         i++;
         itor = BTILeftChild(itor);
     }
     if (i != length) {
-        sprintf(error, "Node number is smaller [%d] than length [%d] after Moving", i, length);
+        sprintf(error, "Node number is smaller [%d] than length [%d] after moving from right's left to right's left", i, length);
         return false;
     }
     

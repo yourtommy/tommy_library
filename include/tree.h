@@ -113,16 +113,25 @@ bool BTISetValue(BinaryTreeItor itor, int value);
 bool BTIDelete(BinaryTreeItor itor);
 
 /***********************************
+ * Check whether itor is one of 
+ * ancestors (including itself)
+ * of descendant.
+ **********************************/
+bool BTIAncestor(BinaryTreeItor itor, BinaryTreeItor descendant);
+
+/***********************************
  * Move itor with its descendants
  * to be the left child of dest.
- * It will fail if dest already has a left child.
+ * It will fail if dest already has a left child
+ * or itor is dest's ancestor.
  ***********************************/
 bool BTIMoveAsLeftChild(BinaryTreeItor itor, BinaryTreeItor dest);
 
 /***********************************
  * Move itor with its descendants
  * to be the right child of dest.
- * It will fail if dest already has a right child.
+ * It will fail if dest already has a right child
+ * or itor is dest's ancestor.
  ***********************************/
 bool BTIMoveAsRightChild(BinaryTreeItor itor, BinaryTreeItor dest);
 

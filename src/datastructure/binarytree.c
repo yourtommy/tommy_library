@@ -20,9 +20,7 @@ bool BTInit(BinaryTree *treep)
 
 bool BTFree(BinaryTree *treep)
 {
-    // TODO
-    UNUSED(treep);
-    return false;
+    return BTDeleteAll(treep);
 }
 
 bool BTEmpty(BinaryTree *treep)
@@ -155,18 +153,45 @@ bool BTIDelete(BinaryTreeItor itor)
     return true;
 }
 
+bool BTIAncestor(BinaryTreeItor itor, BinaryTreeItor descendant)
+{
+    if (BTINull(itor) || BTINull(descendant) 
+            || itor.tree_p != descendant.tree_p)
+        return false;
+    BinaryTreeItor ancestor = descendant;
+    while (!BTINull(ancestor) && !BTIEqual(itor, ancestor))
+        ancestor = BTIParent(ancestor);
+    return !BTINull(ancestor);
+}
+
 bool BTIMoveAsLeftChild(BinaryTreeItor itor, BinaryTreeItor dest)
 {
-    // TODO
-    UNUSED(itor);
-    UNUSED(dest);
-    return false;
+    if (BTINull(itor) || BTINull(dest) || itor.tree_p != dest.tree_p
+        || !BTINull(BTILeftChild(dest))
+        || BTIAncestor(itor, dest))
+        return false;
+    // itor's parent can't be null otherwise it must be dest's ancestor
+    if (itor.ptr->parent_p->left_child_p == itor.ptr) // left child
+        itor.ptr->parent_p->left_child_p = NULL;
+    else                                              // right child
+        itor.ptr->parent_p->right_child_p = NULL;
+    itor.ptr->parent_p = dest.ptr;
+    dest.ptr->left_child_p = itor.ptr;
+    return true;
 }
 
 bool BTIMoveAsRightChild(BinaryTreeItor itor, BinaryTreeItor dest)
 {
-    // TODO
-    UNUSED(itor);
-    UNUSED(dest);
-    return false;
+    if (BTINull(itor) || BTINull(dest) || itor.tree_p != dest.tree_p
+        || !BTINull(BTIRightChild(dest))
+        || BTIAncestor(itor, dest))
+        return false;
+    // itor's parent can't be null otherwise it must be dest's ancestor
+    if (itor.ptr->parent_p->left_child_p == itor.ptr) // left child
+        itor.ptr->parent_p->left_child_p = NULL;
+    else                                              // right child
+        itor.ptr->parent_p->right_child_p = NULL;
+    itor.ptr->parent_p = dest.ptr;
+    dest.ptr->right_child_p = itor.ptr;
+    return true;
 }
