@@ -24,15 +24,15 @@ typedef struct BinaryTree
     BinaryTreeItor root_itor;
 } BinaryTree;
 
-typedef struct BinarySortTree
+typedef struct BinarySortTreeItor /* extends BinaryTreeItor */
 {
-    BinaryTree bt;
-} BinarySortTree;
-
-typedef struct BinarySortTreeItor
-{
-    BinaryTreeItor bt_itor;
+    BinaryTreeItor __super;
 } BinarySortTreeItor;
+
+typedef struct BinarySortTree /* extends BinaryTree */
+{
+    BinaryTree __super;
+} BinarySortTree;
 
 typedef void (*TreeWalkerPtr)(int value);
 
