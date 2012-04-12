@@ -1,5 +1,7 @@
 #include "tree.h"
 #include <stddef.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #define UNUSED(p) (void)(p)
 #define SUPER_PTR(tp) (&(tp->__super))
@@ -60,43 +62,76 @@ bool BSTInsert(BinarySortTree *treep, int value)
 
 bool BSTDelete(BinarySortTreeItor itor)
 {
-    UNUSED(itor);
-    return false;
+    if (BSTINull(itor))
+        return false;
+
+    BinarySortTreeItor to_delete = itor;
+    // two children
+    if (!BTINull(BTILeftChild(SUPER(itor)))
+            && !BTINull(BTIRightChild(SUPER(itor))))
+        to_delete = BSTISuccessor(itor); // Its successor must be in its right child but not its ancestor, and only have one or zero child.
+
+    BinaryTreeItor child_itor = BTILeftChild(SUPER(to_delete));
+    if (BTINull(child_itor))
+        child_itor = BTIRightChild(SUPER(to_delete));
+
+    if (!BTINull(child_itor))
+        child_itor.ptr->parent_p = SUPER(to_delete).ptr->parent_p;
+
+    if (SUPER(to_delete).ptr->parent_p == NULL) // root
+        SUPER(to_delete).tree_p->root_itor.ptr = child_itor.ptr;
+    else if (SUPER(to_delete).ptr == SUPER(to_delete).ptr->parent_p->left_child_p) // left child
+        SUPER(to_delete).ptr->parent_p->left_child_p = child_itor.ptr;
+    else
+        SUPER(to_delete).ptr->parent_p->right_child_p = child_itor.ptr;
+
+    if (!BTIEqual(SUPER(itor), SUPER(to_delete)))
+        BTISetValue(SUPER(itor), BSTIValue(to_delete));
+    free(SUPER(to_delete).ptr);
+    return true;
 }
 
 BinarySortTreeItor BSTSearch(BinarySortTree *treep, int value)
 {
-    UNUSED(treep);
-    UNUSED(value);
-    return BSTNullItor;
+    if (treep == NULL || BTEmpty(SUPER_PTR(treep)))
+        return BSTNullItor;
+    BinaryTreeItor itor = BTRoot(SUPER_PTR(treep));
+    while (!BTINull(itor) && BTIValue(itor) != value)
+        if (value < BTIValue(itor))
+            itor = BTILeftChild(itor);
+        else
+            itor = BTIRightChild(itor);
+    return (BinarySortTreeItor) { .__super = itor };
 }
 
 bool BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp) 
 {
-    // TODO: fix the infinit iteration
-#ifdef INFINITY_ITERATION
     if (walkerp == NULL)
         return false;
 
     BinaryTreeItor walk_stack[4096];
     int walk_stack_top = -1;
-    walk_stack[++walk_stack_top] = BTRoot(SUPER_PTR(treep)); // push
-    while (walk_stack_top >= 0) {
-        BinaryTreeItor cur_itor = walk_stack[walk_stack_top]; // top
-        if (!BTINull(BTILeftChild(cur_itor))) {
-            walk_stack[++walk_stack_top] = BTILeftChild(cur_itor); // push
-            continue;
+    BinaryTreeItor itor = BTRoot(SUPER_PTR(treep)); 
+    while (true) {
+        // Left
+        while (!BTINull(itor)) {
+            walk_stack[++walk_stack_top] = itor; // push
+            itor = BTILeftChild(itor);
         }
-        --walk_stack_top; // pop
-        (*walkerp)(BTIValue(cur_itor));
-        if (!BTINull(BTIRightChild(cur_itor))) 
-            walk_stack[++walk_stack_top] = BTIRightChild(cur_itor); // push
+
+        // Parent
+        if (walk_stack_top < 0) // empty
+            break;
+        itor = walk_stack[walk_stack_top--]; // top & pop
+        (*walkerp)(BTIValue(itor));
+        
+        // Right
+        if (!BTINull(BTIRightChild(itor))) 
+            itor = BTIRightChild(itor); 
+        else
+            itor = (BinaryTreeItor) { .ptr = NULL, .tree_p = NULL };
     }
     return true;
-#endif
-    UNUSED(treep);
-    UNUSED(walkerp);
-    return false;
 }
 
 int BSTIValue(BinarySortTreeItor itor)
@@ -107,4 +142,44 @@ int BSTIValue(BinarySortTreeItor itor)
 bool BSTINull(BinarySortTreeItor itor)
 {
     return BTINull(SUPER(itor));
+}
+
+BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor)
+{
+    if (BSTINull(itor))
+        return BSTNullItor;
+    BinaryTreeItor bt_itor = BTIRightChild(SUPER(itor));
+    if (!BTINull(bt_itor)) {
+        // the left-most descendant (minimum) of its right child
+        while (!BTINull(BTILeftChild(bt_itor))) 
+            bt_itor = BTILeftChild(bt_itor);
+    }
+    else {
+        // the first parent whose left child it is.
+        bt_itor = SUPER(itor);
+        while (!BTINull(BTIParent(bt_itor)) && !BTIEqual(bt_itor, BTILeftChild(BTIParent(bt_itor))))
+            bt_itor = BTIParent(bt_itor);
+        bt_itor = BTIParent(bt_itor);
+    }
+    return (BinarySortTreeItor) { .__super=bt_itor };
+}
+
+BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor)
+{
+    if (BSTINull(itor))
+        return BSTNullItor;
+    BinaryTreeItor bt_itor = BTILeftChild(SUPER(itor));
+    if (!BTINull(bt_itor)) {
+        // the right-most descendant (maximum) of its left child
+        while (!BTINull(BTIRightChild(bt_itor))) 
+            bt_itor = BTIRightChild(bt_itor);
+    }
+    else {
+        bt_itor = SUPER(itor);
+        // the first parent whose right child it is.
+        while (!BTINull(BTIParent(bt_itor)) && !BTIEqual(bt_itor, BTIRightChild(BTIParent(bt_itor))))
+            bt_itor = BTIParent(bt_itor);
+        bt_itor = BTIParent(bt_itor);
+    }
+    return (BinarySortTreeItor) { .__super=bt_itor };
 }

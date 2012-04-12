@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-static const int TestMinArrayLen = 80;
-static const int TestMaxArrayLen = 120;
+static const int TestMinArrayLen = 1;
+static const int TestMaxArrayLen = 1200;
 static const int TestMinValue = -58902;
 static const int TestMaxValue = 58292;
 
@@ -565,9 +565,10 @@ bool TestBTFree(BinaryTree *btp)
     return true;
 }
 
-void TestBinaryTree()
+bool TestBinaryTree()
 {
     BinaryTree bt;
+    bool ret = false;
     if (!TestBTInit(&bt)) 
         printf("TestBTInit failed. Error: %s\n", error);
     else if (!TestBTRoot(&bt)) 
@@ -586,8 +587,11 @@ void TestBinaryTree()
         printf("TestBTMove failed. Error: %s\n", error);
     else if (!TestBTFree(&bt)) 
         printf("TestBTFree failed. Error: %s\n", error);
-    else
+    else {
+        ret = true;
         printf("TestTree successful!!\n");
+    }
+    return ret;
 }
 
 void WalkBST(int value)
@@ -598,19 +602,19 @@ void WalkBST(int value)
     walked_array[walked_count-1] = value;
 }
 
-void TestBinarySortTree()
+bool TestBinarySortTree()
 {
     BinarySortTree bst;
     if (!BSTInit(&bst)) {
         printf("BSTInit failed.\n");
-        return;
+        return false;
     }
 
     int i;
     for (i = 0; i < length; i++) {
         if (!BSTInsert(&bst, numbers[i])) {
             printf("BSTInsert failed.\n");
-            return;
+            return false;
         }
     }
     
@@ -619,52 +623,108 @@ void TestBinarySortTree()
     walked_count = 0;
     if (!BSTInorderWalk(&bst, &WalkBST)) {
         printf("BSTInorderWalk failed.\n");
-        return;
+        return false;
     }
     if (walked_count != length) {
         printf("The number of BST's values [%d] is different than length [%d].", walked_count, length);
-        return;
+        return false;
     }
             
     int unsorted = -1;
     if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
         printf("Error: Tree's values are not sorted [%d] after inorder walk!!\n", unsorted);
-        return;
+        return false;
     }
     
     int missing = -1;
     if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1) {
         printf("Error: Element %d (index %d) is missing after inorder walk!!\n", numbers[missing], missing);
-        return;
+        return false;
     }
 
     // Test search
     for (i = 0; i < length; i++) {
         BinarySortTreeItor itor = BSTSearch(&bst, numbers[i]);
         if (BSTINull(itor)) {
-            printf("Cannot find value [%d] in tree.", i);
-            return;
+            printf("Search failed: cannot find value [%d] in tree.", i);
+            return false;
         }
         if (BSTIValue(itor) != numbers[i]) {
             printf("Found value from BST is wrong [%d].", i);
-            return;
+            return false;
         }
     }
     if (!BSTINull(BSTSearch(&bst, TestMaxValue+1))) {
         printf("Found a nonexisting value (bigger than max).");
-        return;
+        return false;
     }
     if (!BSTINull(BSTSearch(&bst, TestMinValue-1))) {
         printf("Found a nonexisting value (smaller than min).");
-        return;
+        return false;
+    }
+
+    // Test successor & predecessor
+    for (i = 2; i < length-1; i++) {
+        BinarySortTreeItor itor = BSTSearch(&bst, walked_array[i]); // Already tested
+        BinarySortTreeItor successor = BSTISuccessor(itor);
+        BinarySortTreeItor predecessor = BSTIPredecessor(itor);
+        if (walked_array[i-1] != walked_array[i] && walked_array[i] != walked_array[i+1]) {
+            if (BSTIValue(successor) != walked_array[i+1]) {
+                printf("Successor returns wrong data!!\n");
+                return false;
+            }
+            else if(BSTIValue(predecessor) != walked_array[i-1]) {
+                printf("Predecessor returns wrong data!!\n");
+                return false;
+            }
+        } else {
+            if (!BSTINull(successor) && BSTIValue(successor) < walked_array[i]) {
+                printf("Successor returns wrong data %d - (%d, %d)(allow equal)!!\n", BSTIValue(successor), walked_array[i], walked_array[i+1]);
+                return false;
+            }
+            else if (!BSTINull(predecessor) && BSTIValue(predecessor) > walked_array[i]) {
+                printf("Predecessor returns wrong data %d - (%d, %d) (allow equal)!!\n", BSTIValue(predecessor), walked_array[i-1], walked_array[i]);
+                return false;
+            }
+        }
+    }
+
+    // test delete
+    int k = 0;
+    BinarySortTreeItor itor = BSTSearch(&bst, numbers[k]);
+    if (!BSTDelete(itor)) {
+        printf("BSTDelete failed\n");
+        return false;
+    }
+    walked_count = 0;
+    if (!BSTInorderWalk(&bst, &WalkBST)) {
+        printf("BSTInorderWalk failed after delete.\n");
+        return false;
+    }
+    if (walked_count != length-1) {
+        printf("The number of BST's values [%d] is different than length-1 [%d] after delete.\n", walked_count, length-1);
+        return false;
+    }
+            
+    unsorted = -1;
+    if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
+        printf("Error: Tree's values are not sorted [%d] after inorder walk after delete!!\n", unsorted);
+        return false;
+    }
+    
+    missing = -1;
+    if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[k]) {
+        printf("Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
+        return false;
     }
 
     if (!BSTFree(&bst)) {
         printf("BSTFree failed.\n");
-        return;
+        return false;
     }
 
     printf("TestBinarySortTree successful!!\n");
+    return true;
 }
 
 void TestTree()
@@ -673,6 +733,8 @@ void TestTree()
     numbers = alloca(sizeof(int)*length);
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
-    TestBinaryTree();
-    TestBinarySortTree();
+    if (!TestBinaryTree() || !TestBinarySortTree()) {
+        printf("Test tree falied - length: %d, MinValue: %d, MaxValue: %d\n", length, TestMinValue, TestMaxValue);
+        PrintArrayInt("numbers", numbers, length);
+    }
 }

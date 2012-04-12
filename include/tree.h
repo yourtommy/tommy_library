@@ -202,5 +202,15 @@ int BSTIValue(BinarySortTreeItor itor);
  ***********************************/
 bool BSTINull(BinarySortTreeItor itor);
 
+/***********************************
+ * Get itor's successor
+ ***********************************/
+BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor);
+
+/***********************************
+ * Get itor's successor
+ ***********************************/
+BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor);
+
 #endif
 
