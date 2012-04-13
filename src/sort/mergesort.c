@@ -1,7 +1,6 @@
 #include "sort.h"
+#include "utility.h"
 #include <stdlib.h>
-
-const int Infinity = ~(unsigned int)0 >> 1;
 
 /*
  * mid belongs to the right part
@@ -14,13 +13,13 @@ MergeArray(int *a, int begin, int mid, int end)
     int i;
     for (i = 0; i < leftn; i++)
         left[i] = a[begin+i];
-    left[leftn] = Infinity;
+    left[leftn] = INFINITY_INT;
 
     int rightn = end - mid;
     int *right = alloca((rightn+1)*sizeof(int));
     for (i = 0; i < rightn; i++)
         right[i] = a[mid+i];
-    right[rightn] = Infinity;
+    right[rightn] = INFINITY_INT;
     
     int lefti = 0, righti=0;
     for (i = begin; i < end; i++) {

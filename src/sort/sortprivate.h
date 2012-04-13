@@ -6,7 +6,5 @@ void CountingSortArrayWithConvert(int *a, int begin, int end,
 
 int Partition(int *a, int begin, int end);
 
-#define UNUSED(p) (void)(p)
-
 #endif
 

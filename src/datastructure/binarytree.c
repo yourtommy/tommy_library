@@ -1,9 +1,7 @@
 #include "tree.h"
+#include "utility.h"
 #include <stddef.h>
 #include <stdlib.h>
-
-#define UNUSED(p)       (void)(p)
-#define INFINITY        (int)((~(unsigned)0) >> 1)
 
 static BinaryTreeItor BTNullItor = {
     .ptr = NULL,
@@ -122,7 +120,7 @@ BinaryTreeItor BTIParent(BinaryTreeItor itor)
 int BTIValue(BinaryTreeItor itor)
 {
     if (BTINull(itor))
-        return INFINITY;
+        return INFINITY_INT;
     return itor.ptr->value;
 }
 

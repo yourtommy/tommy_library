@@ -117,7 +117,5 @@ typedef struct ListNode
 // prototypes for DLA
 #define LIST_POOL_CAPACITY 8192
 
-#define UNUSED(p) ((void)(p))
-
 #endif
 

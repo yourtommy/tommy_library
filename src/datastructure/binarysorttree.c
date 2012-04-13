@@ -1,11 +1,8 @@
 #include "tree.h"
+#include "utility.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
-
-#define UNUSED(p) (void)(p)
-#define SUPER_PTR(tp) (&(tp->__super))
-#define SUPER(t) (t.__super)
 
 static BinarySortTreeItor BSTNullItor = { 
     .__super = (BinaryTreeItor) {

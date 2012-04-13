@@ -1,5 +1,5 @@
 #include "datastructure.h"
-#include "utility.h"
+#include "utilitytest.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>

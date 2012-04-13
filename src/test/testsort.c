@@ -1,9 +1,9 @@
+#include "sort.h"
+#include "utilitytest.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "sort.h"
-#include "utility.h"
 
 #define TEST_SORT_ARRAY(sort, numbers, length, begin, end) { \
     printf("===%s===\n", #sort); \
