@@ -5,7 +5,7 @@
 #include <assert.h>
 
 static BinarySortTreeItor BSTNullItor = { 
-    .__super = (BinaryTreeItor) {
+    .SUPER_MEMBER = (BinaryTreeItor) {
         .ptr = NULL,
         .tree_p = NULL,
     },
@@ -98,7 +98,7 @@ BinarySortTreeItor BSTSearch(BinarySortTree *treep, int value)
             itor = BTILeftChild(itor);
         else
             itor = BTIRightChild(itor);
-    return (BinarySortTreeItor) { .__super = itor };
+    return (BinarySortTreeItor) { .SUPER_MEMBER = itor };
 }
 
 bool BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp) 
@@ -135,7 +135,7 @@ BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor)
             bt_itor = BTIParent(bt_itor);
         bt_itor = BTIParent(bt_itor);
     }
-    return (BinarySortTreeItor) { .__super=bt_itor };
+    return (BinarySortTreeItor) { .SUPER_MEMBER=bt_itor };
 }
 
 BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor)
@@ -155,5 +155,5 @@ BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor)
             bt_itor = BTIParent(bt_itor);
         bt_itor = BTIParent(bt_itor);
     }
-    return (BinarySortTreeItor) { .__super=bt_itor };
+    return (BinarySortTreeItor) { .SUPER_MEMBER=bt_itor };
 }

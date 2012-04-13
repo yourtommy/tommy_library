@@ -1,6 +1,7 @@
 #ifndef TREE_H__
 #define TREE_H__
 
+#include "utility.h"
 #include <stdbool.h>
 
 struct BinaryTree;
@@ -26,12 +27,12 @@ typedef struct BinaryTree
 
 typedef struct BinarySortTreeItor /* extends BinaryTreeItor */
 {
-    BinaryTreeItor __super;
+    BinaryTreeItor SUPER_MEMBER;
 } BinarySortTreeItor;
 
 typedef struct BinarySortTree /* extends BinaryTree */
 {
-    BinaryTree __super;
+    BinaryTree SUPER_MEMBER;
 } BinarySortTree;
 
 /* If tree walker returns false then
