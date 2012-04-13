@@ -732,17 +732,16 @@ bool WalkBST(int value)
     return true;
 }
 
-bool TestBinarySortTree()
+bool TestBST(BinarySortTree *bstp)
 {
-    BinarySortTree bst;
-    if (!BSTInit(&bst)) {
+    if (!BSTInit(bstp)) {
         printf("BSTInit failed.\n");
         return false;
     }
 
     int i;
     for (i = 0; i < length; i++) {
-        if (!BSTInsert(&bst, numbers[i])) {
+        if (!BSTInsert(bstp, numbers[i])) {
             printf("BSTInsert failed.\n");
             return false;
         }
@@ -751,7 +750,7 @@ bool TestBinarySortTree()
     // Test sort (inorder walk)
     walked_array = alloca(sizeof(int) * length);
     walked_count = 0;
-    if (!BSTInorderWalk(&bst, &WalkBST)) {
+    if (!BSTInorderWalk(bstp, &WalkBST)) {
         printf("BSTInorderWalk failed.\n");
         return false;
     }
@@ -774,7 +773,7 @@ bool TestBinarySortTree()
 
     // Test search
     for (i = 0; i < length; i++) {
-        BinarySortTreeItor itor = BSTSearch(&bst, numbers[i]);
+        BinarySortTreeItor itor = BSTSearch(bstp, numbers[i]);
         if (BSTINull(itor)) {
             printf("Search failed: cannot find value [%d] in tree.", i);
             return false;
@@ -784,18 +783,18 @@ bool TestBinarySortTree()
             return false;
         }
     }
-    if (!BSTINull(BSTSearch(&bst, TestMaxValue+1))) {
+    if (!BSTINull(BSTSearch(bstp, TestMaxValue+1))) {
         printf("Found a nonexisting value (bigger than max).");
         return false;
     }
-    if (!BSTINull(BSTSearch(&bst, TestMinValue-1))) {
+    if (!BSTINull(BSTSearch(bstp, TestMinValue-1))) {
         printf("Found a nonexisting value (smaller than min).");
         return false;
     }
 
     // Test successor & predecessor
     for (i = 2; i < length-1; i++) {
-        BinarySortTreeItor itor = BSTSearch(&bst, walked_array[i]); // Already tested
+        BinarySortTreeItor itor = BSTSearch(bstp, walked_array[i]); // Already tested
         BinarySortTreeItor successor = BSTISuccessor(itor);
         BinarySortTreeItor predecessor = BSTIPredecessor(itor);
         if (walked_array[i-1] != walked_array[i] && walked_array[i] != walked_array[i+1]) {
@@ -821,13 +820,13 @@ bool TestBinarySortTree()
 
     // test delete
     int k = 0;
-    BinarySortTreeItor itor = BSTSearch(&bst, numbers[k]);
+    BinarySortTreeItor itor = BSTSearch(bstp, numbers[k]);
     if (!BSTDelete(itor)) {
         printf("BSTDelete failed\n");
         return false;
     }
     walked_count = 0;
-    if (!BSTInorderWalk(&bst, &WalkBST)) {
+    if (!BSTInorderWalk(bstp, &WalkBST)) {
         printf("BSTInorderWalk failed after delete.\n");
         return false;
     }
@@ -848,12 +847,34 @@ bool TestBinarySortTree()
         return false;
     }
 
-    if (!BSTFree(&bst)) {
+    if (!BSTFree(bstp)) {
         printf("BSTFree failed.\n");
         return false;
     }
 
+    return true;
+}
+
+bool TestBinarySortTree()
+{
+    BinarySortTree bst;
+    if (!TestBST(&bst)) {
+        printf("TestBinarySortTree failed!!\n");
+        return false;
+    }
     printf("TestBinarySortTree successful!!\n");
+    return true;
+}
+
+bool TestRedBlackTree()
+{
+    RedBlackTree rbt;
+    if (!TestBST(RBTAsBST(&rbt))) {
+        printf("Red Blue Tree failed as a BST tree\n");
+        return false;
+    }
+
+    printf("TestRedBlackTree successful!!\n");
     return true;
 }
 
@@ -863,7 +884,7 @@ void TestTree()
     numbers = alloca(sizeof(int)*length);
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
-    if (!TestBinaryTree() || !TestBinarySortTree()) {
+    if (!TestBinaryTree() || !TestBinarySortTree() || !TestRedBlackTree()) {
         printf("Test tree falied - length: %d, MinValue: %d, MaxValue: %d\n", length, TestMinValue, TestMaxValue);
         PrintArrayInt("numbers", numbers, length);
     }

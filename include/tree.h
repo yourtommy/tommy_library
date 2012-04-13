@@ -6,12 +6,15 @@
 
 struct BinaryTree;
 
+#define BINARY_TREE_NODE_MEMBERS \
+    struct BinaryTreeNode *parent_p; \
+    struct BinaryTreeNode *left_child_p; \
+    struct BinaryTreeNode *right_child_p; \
+    int value;
+
 typedef struct BinaryTreeNode
 {
-    struct BinaryTreeNode *parent_p;
-    struct BinaryTreeNode *left_child_p;
-    struct BinaryTreeNode *right_child_p;
-    int value;
+    BINARY_TREE_NODE_MEMBERS 
 } BinaryTreeNode;
 
 typedef struct BinaryTreeItor
@@ -25,15 +28,31 @@ typedef struct BinaryTree
     BinaryTreeItor root_itor;
 } BinaryTree;
 
-typedef struct BinarySortTreeItor /* extends BinaryTreeItor */
+typedef struct BinarySortTreeItor
 {
-    BinaryTreeItor SUPER_MEMBER;
+    BinaryTreeItor SUPER_MEMBER; /* extends BinaryTreeItor */
 } BinarySortTreeItor;
 
-typedef struct BinarySortTree /* extends BinaryTree */
+typedef struct BinarySortTree
 {
-    BinaryTree SUPER_MEMBER;
+    BinaryTree SUPER_MEMBER; /* extends BinaryTree */
 } BinarySortTree;
+
+typedef struct RedBlackTreeNode
+{
+    BINARY_TREE_NODE_MEMBERS /* extends BinaryTreeNode */
+    bool red;
+} RedBlackTreeNode;
+
+typedef struct RedBlackTree
+{
+    BinarySortTree SUPER_MEMBER; /* extends BinarySortTree */
+} RedBlackTree;
+
+typedef struct RedBlackTreeItor
+{
+    BinarySortTreeItor SUPER_MEMBER;  /* extends BinarySortTree */
+} RedBlackTreeItor;
 
 /* If tree walker returns false then
  * then the walk terminates.
@@ -228,6 +247,17 @@ BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor);
  * Get itor's successor
  ***********************************/
 BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor);
+
+
+//==================================
+// Red Black Tree Functions
+//==================================
+
+/***********************************
+ * Treat Red Black Tree as Binary Sort Tree
+ * so it can be used in BST's funcitons.
+ ***********************************/
+BinarySortTree *RBTAsBST(RedBlackTree *treep);
 
 #endif
 
