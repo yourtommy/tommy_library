@@ -106,32 +106,9 @@ BinarySortTreeItor BSTSearch(BinarySortTree *treep, int value)
 
 bool BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp) 
 {
-    if (walkerp == NULL)
+    if (treep == NULL)
         return false;
-
-    BinaryTreeItor walk_stack[4096];
-    int walk_stack_top = -1;
-    BinaryTreeItor itor = BTRoot(SUPER_PTR(treep)); 
-    while (true) {
-        // Left
-        while (!BTINull(itor)) {
-            walk_stack[++walk_stack_top] = itor; // push
-            itor = BTILeftChild(itor);
-        }
-
-        // Parent
-        if (walk_stack_top < 0) // empty
-            break;
-        itor = walk_stack[walk_stack_top--]; // top & pop
-        (*walkerp)(BTIValue(itor));
-        
-        // Right
-        if (!BTINull(BTIRightChild(itor))) 
-            itor = BTIRightChild(itor); 
-        else
-            itor = (BinaryTreeItor) { .ptr = NULL, .tree_p = NULL };
-    }
-    return true;
+    return BTInorderWalk(SUPER_PTR(treep), walkerp);
 }
 
 int BSTIValue(BinarySortTreeItor itor)

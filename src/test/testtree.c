@@ -18,6 +18,8 @@ char error[1024];
 static int *walked_array;
 static int walked_count;
 
+bool WalkBST(int value);
+
 bool VerifyBTINullLeftChild(BinaryTreeItor itor, const char *target)
 {
     if (!BTINull(BTILeftChild(itor))) {
@@ -553,6 +555,131 @@ bool TestBTMove(BinaryTree *btp)
         return false;
     }
     
+    BTDeleteAll(btp);
+    return true;
+}
+
+bool BuildPreorderTree(BinaryTreeItor itor, int begin, int end)
+{
+    if (begin >= end)
+        return false;
+    BTISetValue(itor, numbers[begin]);
+    if (begin == end - 1)
+        return true;
+
+    int mid = (begin+end+1) / 2; // ceiling(mid(begin+1, end-1))
+    if (begin < mid) {
+        if (!BTIAddLeftChild(itor, -1))
+            return false;
+        if (!BuildPreorderTree(BTILeftChild(itor), begin+1, mid+1))
+            return false;
+    }
+    if (mid+1 < end) {
+        if (!BTIAddRightChild(itor, -1))
+            return false;
+        if (!BuildPreorderTree(BTIRightChild(itor), mid+1, end))
+            return false;
+    }
+    return true;
+}
+
+bool BuildInorderTree(BinaryTreeItor itor, int begin, int end)
+{
+    if (begin >= end)
+        return false;
+    int mid = (begin+end) / 2; // ceiling(mid(begin, end-1))
+    BTISetValue(itor, numbers[mid]);
+    if (begin < mid) {
+        if (!BTIAddLeftChild(itor, -1))
+            return false;
+        if (!BuildInorderTree(BTILeftChild(itor), begin, mid))
+            return false;
+    }
+    if (mid+1 < end) {
+        if (!BTIAddRightChild(itor, -1))
+            return false;
+        if (!BuildInorderTree(BTIRightChild(itor), mid+1, end))
+            return false;
+    }
+    return true;
+}
+
+bool BuildPostorderTree(BinaryTreeItor itor, int begin, int end)
+{ 
+    if (begin >= end)
+        return false;
+    
+    BTISetValue(itor, numbers[end-1]);
+    if (begin == end - 1)
+        return true;
+    int mid = (begin+end-1) / 2; // ceiling(mid(begin, end-2))
+    if (mid > begin) {
+        if (!BTIAddLeftChild(itor, -1))
+            return false;
+        if (!BuildPostorderTree(BTILeftChild(itor), begin, mid))
+            return false;
+    }
+    if (mid < end-1) {
+        if (!BTIAddRightChild(itor, -1))
+            return false;
+        if (!BuildPostorderTree(BTIRightChild(itor), mid, end-1))
+            return false;
+    }
+    return true;
+}
+
+bool TestBTWalk(BinaryTree *btp)
+{
+
+    bool (*builders[])(BinaryTreeItor, int, int) = {
+        &BuildPreorderTree,
+        &BuildInorderTree,
+        &BuildPostorderTree,
+    };
+
+    bool (*walks[])(BinaryTree *, TreeWalkerPtr) = {
+        &BTPreorderWalk,
+        &BTInorderWalk,
+        &BTPostorderWalk,
+    };
+
+    const char *walk_names[] = {
+        "BTPreorderWalk",
+        "BTInorderWalk",
+        "BTPostorderWalk",
+    };
+    
+    unsigned t;
+    walked_array = alloca(sizeof(int)*length);
+    for (t = 0; t < sizeof(builders) / sizeof(builders[0]); t++) {
+        if (!BTEmpty(btp)) {
+            sprintf(error, "This test requires tree to be empty");
+            return false;
+        }
+
+        BTAddRoot(btp, -1);
+        (*builders[t])(BTRoot(btp), 0, length);
+
+        walked_count = 0;
+        if (!(*walks[t])(btp, &WalkBST)) {
+            sprintf(error, "%s failed", walk_names[t]);
+            return false;
+        }
+        
+        if (walked_count != length) {
+            sprintf(error, "%s walked count (%d) is different than length (%d)", walk_names[t], walked_count, length);
+            return false;
+        }
+
+        int i; 
+        for (i = 0; i < length; i++)
+            if (walked_array[i] != numbers[i]) {
+                sprintf(error, "%s walked array is different than numbers [%d]", walk_names[t], i);
+                return false;
+            }
+
+        BTDeleteAll(btp);
+    }
     return true;
 }
 
@@ -585,21 +712,24 @@ bool TestBinaryTree()
         printf("TestBTSetValue failed. Error: %s\n", error);
     else if (!TestBTMove(&bt)) 
         printf("TestBTMove failed. Error: %s\n", error);
+    else if (!TestBTWalk(&bt)) 
+        printf("TestBTWalk failed. Error: %s\n", error);
     else if (!TestBTFree(&bt)) 
         printf("TestBTFree failed. Error: %s\n", error);
     else {
         ret = true;
-        printf("TestTree successful!!\n");
+        printf("TestBinaryTree successful!!\n");
     }
     return ret;
 }
 
-void WalkBST(int value)
+bool WalkBST(int value)
 {
     walked_count++;
     if (walked_count > length)
-        return;
+        return false;
     walked_array[walked_count-1] = value;
+    return true;
 }
 
 bool TestBinarySortTree()

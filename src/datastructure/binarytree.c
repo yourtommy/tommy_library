@@ -195,3 +195,88 @@ bool BTIMoveAsRightChild(BinaryTreeItor itor, BinaryTreeItor dest)
     dest.ptr->right_child_p = itor.ptr;
     return true;
 }
+
+bool BTPreorderWalk(BinaryTree *treep, TreeWalkerPtr walkerp) 
+{
+    if (walkerp == NULL)
+        return false;
+    BinaryTreeItor walk_stack[4096];
+    int walk_stack_top = -1;
+    BinaryTreeItor itor = BTRoot(treep);
+    while (!BTINull(itor)) {
+        if (!(*walkerp)(BTIValue(itor))) // walk
+            return false;
+        if (!BTINull(BTIRightChild(itor)))
+            walk_stack[++walk_stack_top] = BTIRightChild(itor); // push right
+        if (!BTINull(BTILeftChild(itor)))
+            walk_stack[++walk_stack_top] = BTILeftChild(itor); // push left
+        if (walk_stack_top < 0)
+            itor = BTNullItor;
+        else
+            itor = walk_stack[walk_stack_top--]; // top && pop left (first try) or right 
+    }
+    return true;
+}
+
+bool BTInorderWalk(BinaryTree *treep, TreeWalkerPtr walkerp) 
+{
+    if (walkerp == NULL)
+        return false;
+    BinaryTreeItor walk_stack[4096];
+    int walk_stack_top = -1;
+    BinaryTreeItor itor = BTRoot(treep); 
+    while (true) {
+        // Left
+        while (!BTINull(itor)) {
+            walk_stack[++walk_stack_top] = itor; // push left
+            itor = BTILeftChild(itor);
+        }
+
+        // Parent
+        if (walk_stack_top < 0) // empty
+            break;
+        itor = walk_stack[walk_stack_top--]; // top & pop self
+        if (!(*walkerp)(BTIValue(itor)))
+            return false;
+        
+        // Right
+        if (!BTINull(BTIRightChild(itor))) 
+            itor = BTIRightChild(itor); 
+        else
+            itor = BTNullItor;
+    }
+    return true;
+}
+
+bool BTPostorderWalk(BinaryTree *treep, TreeWalkerPtr walkerp) 
+{
+    if (walkerp == NULL)
+        return false;
+    if (BTEmpty(treep))
+        return true;
+
+    BinaryTreeItor walk_stack[4096];
+    int walk_stack_top = -1;
+    BinaryTreeItor prev = BTNullItor;
+    walk_stack[++walk_stack_top] = BTRoot(treep);
+    BinaryTreeItor itor;
+    while (true) {
+        itor = walk_stack[walk_stack_top]; // top self
+        if (BTIEqual(itor, prev)  // back from a child to parent
+                || BTIEqual(prev, BTILeftChild(itor)) 
+                || BTIEqual(prev, BTIRightChild(itor))) { 
+            if (!(*walkerp)(BTIValue(itor))) // walk
+                return false;
+            if (--walk_stack_top < 0) // pop
+                break;
+        } else { // go down to a child or jump from a left child to a right child
+            if (!BTINull(BTIRightChild(itor)))
+                walk_stack[++walk_stack_top] = BTIRightChild(itor); // push right
+            if (!BTINull(BTILeftChild(itor)))
+                walk_stack[++walk_stack_top] = BTILeftChild(itor);  // push left
+        }
+        prev = itor;
+    }
+
+    return true;
+}

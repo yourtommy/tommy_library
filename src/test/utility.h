@@ -10,5 +10,7 @@ int UnsortedIndex(int *a, int begin, int end);
 
 int FindMissingElement(int *origin, int *sorted, int begin, int end); 
 
+#define UNUSED(p) (void)(p)
+
 #endif
 

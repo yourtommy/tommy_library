@@ -34,13 +34,29 @@ typedef struct BinarySortTree /* extends BinaryTree */
     BinaryTree __super;
 } BinarySortTree;
 
-typedef void (*TreeWalkerPtr)(int value);
+/* If tree walker returns false then
+ * then the walk terminates.
+ */
+typedef bool (*TreeWalkerPtr)(int value);
 
 //==================================
 // Binary Tree Functions
 //==================================
 
-// inorder, postorder, preorder
+/***********************************
+ * Preorder tree walk
+ **********************************/
+bool BTPreorderWalk(BinaryTree *treep, TreeWalkerPtr walkerp); 
+
+/***********************************
+ * Inorder tree walk
+ **********************************/
+bool BTInorderWalk(BinaryTree *treep, TreeWalkerPtr walkerp); 
+
+/***********************************
+ * Postorder tree walk
+ **********************************/
+bool BTPostorderWalk(BinaryTree *treep, TreeWalkerPtr walkerp); 
 
 /*********************************** 
  * Must init a tree before using it.
