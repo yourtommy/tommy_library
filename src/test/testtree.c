@@ -732,16 +732,17 @@ bool WalkBST(int value)
     return true;
 }
 
-bool TestBST(BinarySortTree *bstp)
+bool TestBinarySortTree()
 {
-    if (!BSTInit(bstp)) {
+    BinarySortTree bst;
+    if (!BSTInit(&bst)) {
         printf("BSTInit failed.\n");
         return false;
     }
 
     int i;
     for (i = 0; i < length; i++) {
-        if (!BSTInsert(bstp, numbers[i])) {
+        if (!BSTInsert(&bst, numbers[i])) {
             printf("BSTInsert failed.\n");
             return false;
         }
@@ -750,7 +751,7 @@ bool TestBST(BinarySortTree *bstp)
     // Test sort (inorder walk)
     walked_array = alloca(sizeof(int) * length);
     walked_count = 0;
-    if (!BSTInorderWalk(bstp, &WalkBST)) {
+    if (!BSTInorderWalk(&bst, &WalkBST)) {
         printf("BSTInorderWalk failed.\n");
         return false;
     }
@@ -773,7 +774,7 @@ bool TestBST(BinarySortTree *bstp)
 
     // Test search
     for (i = 0; i < length; i++) {
-        BinarySortTreeItor itor = BSTSearch(bstp, numbers[i]);
+        BinarySortTreeItor itor = BSTSearch(&bst, numbers[i]);
         if (BSTINull(itor)) {
             printf("Search failed: cannot find value [%d] in tree.", i);
             return false;
@@ -783,18 +784,18 @@ bool TestBST(BinarySortTree *bstp)
             return false;
         }
     }
-    if (!BSTINull(BSTSearch(bstp, TestMaxValue+1))) {
+    if (!BSTINull(BSTSearch(&bst, TestMaxValue+1))) {
         printf("Found a nonexisting value (bigger than max).");
         return false;
     }
-    if (!BSTINull(BSTSearch(bstp, TestMinValue-1))) {
+    if (!BSTINull(BSTSearch(&bst, TestMinValue-1))) {
         printf("Found a nonexisting value (smaller than min).");
         return false;
     }
 
     // Test successor & predecessor
     for (i = 2; i < length-1; i++) {
-        BinarySortTreeItor itor = BSTSearch(bstp, walked_array[i]); // Already tested
+        BinarySortTreeItor itor = BSTSearch(&bst, walked_array[i]); // Already tested
         BinarySortTreeItor successor = BSTISuccessor(itor);
         BinarySortTreeItor predecessor = BSTIPredecessor(itor);
         if (walked_array[i-1] != walked_array[i] && walked_array[i] != walked_array[i+1]) {
@@ -820,13 +821,13 @@ bool TestBST(BinarySortTree *bstp)
 
     // test delete
     int k = 0;
-    BinarySortTreeItor itor = BSTSearch(bstp, numbers[k]);
+    BinarySortTreeItor itor = BSTSearch(&bst, numbers[k]);
     if (!BSTDelete(itor)) {
         printf("BSTDelete failed\n");
         return false;
     }
     walked_count = 0;
-    if (!BSTInorderWalk(bstp, &WalkBST)) {
+    if (!BSTInorderWalk(&bst, &WalkBST)) {
         printf("BSTInorderWalk failed after delete.\n");
         return false;
     }
@@ -847,21 +848,11 @@ bool TestBST(BinarySortTree *bstp)
         return false;
     }
 
-    if (!BSTFree(bstp)) {
+    if (!BSTFree(&bst)) {
         printf("BSTFree failed.\n");
         return false;
     }
 
-    return true;
-}
-
-bool TestBinarySortTree()
-{
-    BinarySortTree bst;
-    if (!TestBST(&bst)) {
-        printf("TestBinarySortTree failed!!\n");
-        return false;
-    }
     printf("TestBinarySortTree successful!!\n");
     return true;
 }
@@ -869,8 +860,121 @@ bool TestBinarySortTree()
 bool TestRedBlackTree()
 {
     RedBlackTree rbt;
-    if (!TestBST(RBTAsBST(&rbt))) {
-        printf("Red Blue Tree failed as a BST tree\n");
+    if (!RBTInit(&rbt)) {
+        printf("RBTInit failed.\n");
+        return false;
+    }
+
+    int i;
+    for (i = 0; i < length; i++) {
+        if (!RBTInsert(&rbt, numbers[i])) {
+            printf("RBTInsert failed.\n");
+            return false;
+        }
+    }
+    
+    // Test sort (inorder walk)
+    walked_array = alloca(sizeof(int) * length);
+    walked_count = 0;
+    if (!RBTInorderWalk(&rbt, &WalkBST)) {
+        printf("RBTInorderWalk failed.\n");
+        return false;
+    }
+    if (walked_count != length) {
+        printf("The number of RBT's values [%d] is different than length [%d].", walked_count, length);
+        return false;
+    }
+            
+    int unsorted = -1;
+    if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
+        printf("Error: Tree's values are not sorted [%d] after inorder walk!!\n", unsorted);
+        return false;
+    }
+    
+    int missing = -1;
+    if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1) {
+        printf("Error: Element %d (index %d) is missing after inorder walk!!\n", numbers[missing], missing);
+        return false;
+    }
+
+    // Test search
+    for (i = 0; i < length; i++) {
+        RedBlackTreeItor itor = RBTSearch(&rbt, numbers[i]);
+        if (RBTINull(itor)) {
+            printf("Search failed: cannot find value [%d] in tree.", i);
+            return false;
+        }
+        if (RBTIValue(itor) != numbers[i]) {
+            printf("Found value from RBT is wrong [%d].", i);
+            return false;
+        }
+    }
+    if (!RBTINull(RBTSearch(&rbt, TestMaxValue+1))) {
+        printf("Found a nonexisting value (bigger than max).");
+        return false;
+    }
+    if (!RBTINull(RBTSearch(&rbt, TestMinValue-1))) {
+        printf("Found a nonexisting value (smaller than min).");
+        return false;
+    }
+
+    // Test successor & predecessor
+    for (i = 2; i < length-1; i++) {
+        RedBlackTreeItor itor = RBTSearch(&rbt, walked_array[i]); // Already tested
+        RedBlackTreeItor successor = RBTISuccessor(itor);
+        RedBlackTreeItor predecessor = RBTIPredecessor(itor);
+        if (walked_array[i-1] != walked_array[i] && walked_array[i] != walked_array[i+1]) {
+            if (RBTIValue(successor) != walked_array[i+1]) {
+                printf("Successor returns wrong data!!\n");
+                return false;
+            }
+            else if(RBTIValue(predecessor) != walked_array[i-1]) {
+                printf("Predecessor returns wrong data!!\n");
+                return false;
+            }
+        } else {
+            if (!RBTINull(successor) && RBTIValue(successor) < walked_array[i]) {
+                printf("Successor returns wrong data %d - (%d, %d)(allow equal)!!\n", RBTIValue(successor), walked_array[i], walked_array[i+1]);
+                return false;
+            }
+            else if (!RBTINull(predecessor) && RBTIValue(predecessor) > walked_array[i]) {
+                printf("Predecessor returns wrong data %d - (%d, %d) (allow equal)!!\n", RBTIValue(predecessor), walked_array[i-1], walked_array[i]);
+                return false;
+            }
+        }
+    }
+
+    // test delete
+    int k = 0;
+    RedBlackTreeItor itor = RBTSearch(&rbt, numbers[k]);
+    if (!RBTDelete(itor)) {
+        printf("RBTDelete failed\n");
+        return false;
+    }
+    walked_count = 0;
+    if (!RBTInorderWalk(&rbt, &WalkBST)) {
+        printf("RBTInorderWalk failed after delete.\n");
+        return false;
+    }
+    if (walked_count != length-1) {
+        printf("The number of RBT's values [%d] is different than length-1 [%d] after delete.\n", walked_count, length-1);
+        return false;
+    }
+            
+    unsorted = -1;
+    if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
+        printf("Error: Tree's values are not sorted [%d] after inorder walk after delete!!\n", unsorted);
+        return false;
+    }
+    
+    missing = -1;
+    if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[k]) {
+        printf("Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
+        return false;
+    }
+
+    if (!RBTFree(&rbt)) {
+        printf("RBTFree failed.\n");
         return false;
     }
 

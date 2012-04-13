@@ -6,15 +6,12 @@
 
 struct BinaryTree;
 
-#define BINARY_TREE_NODE_MEMBERS \
-    struct BinaryTreeNode *parent_p; \
-    struct BinaryTreeNode *left_child_p; \
-    struct BinaryTreeNode *right_child_p; \
-    int value;
-
 typedef struct BinaryTreeNode
 {
-    BINARY_TREE_NODE_MEMBERS 
+    struct BinaryTreeNode *parent_p;
+    struct BinaryTreeNode *left_child_p;
+    struct BinaryTreeNode *right_child_p;
+    int value;
 } BinaryTreeNode;
 
 typedef struct BinaryTreeItor
@@ -40,7 +37,7 @@ typedef struct BinarySortTree
 
 typedef struct RedBlackTreeNode
 {
-    BINARY_TREE_NODE_MEMBERS /* extends BinaryTreeNode */
+    BinaryTreeNode SUPER_MEMBER; /* extends BinaryTreeNode */
     bool red;
 } RedBlackTreeNode;
 
@@ -51,7 +48,7 @@ typedef struct RedBlackTree
 
 typedef struct RedBlackTreeItor
 {
-    BinarySortTreeItor SUPER_MEMBER;  /* extends BinarySortTree */
+    BinarySortTreeItor SUPER_MEMBER; /* extends BinarySortTree */
 } RedBlackTreeItor;
 
 /* If tree walker returns false then
@@ -244,7 +241,7 @@ bool BSTINull(BinarySortTreeItor itor);
 BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor);
 
 /***********************************
- * Get itor's successor
+ * Get itor's predecessor
  ***********************************/
 BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor);
 
@@ -253,11 +250,61 @@ BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor);
 // Red Black Tree Functions
 //==================================
 
+/*********************************** 
+ * Must init a tree before using it.
+ **********************************/
+bool RBTInit(RedBlackTree *treep);
+
 /***********************************
- * Treat Red Black Tree as Binary Sort Tree
- * so it can be used in BST's funcitons.
+ * After freeing a tree you must init
+ * it again to use it.
+ **********************************/
+bool RBTFree(RedBlackTree *treep);
+
+/***********************************
+ * Check whether a binary sort tree is empty.
+ **********************************/
+bool RBTEmpty(RedBlackTree *treep);
+
+/***********************************
+ * Insert value into treep
+ **********************************/
+bool RBTInsert(RedBlackTree *treep, int value);
+
+/***********************************
+ * Delete itor from its contained RBT 
+ **********************************/
+bool RBTDelete(RedBlackTreeItor itor);
+
+/***********************************
+ * Delete itor from its contained RBT 
+ **********************************/
+RedBlackTreeItor RBTSearch(RedBlackTree *treep, int value);
+
+/***********************************
+ * Inorder tree walk
+ **********************************/
+bool RBTInorderWalk(RedBlackTree *treep, TreeWalkerPtr walkerp); 
+
+/***********************************
+ * Return the value of a binary tree itor.
  ***********************************/
-BinarySortTree *RBTAsBST(RedBlackTree *treep);
+int RBTIValue(RedBlackTreeItor itor);
+
+/***********************************
+ * Check whether a binrary tree itor is null.
+ ***********************************/
+bool RBTINull(RedBlackTreeItor itor);
+
+/***********************************
+ * Get itor's successor
+ ***********************************/
+RedBlackTreeItor RBTISuccessor(RedBlackTreeItor itor);
+
+/***********************************
+ * Get itor's predecessor
+ ***********************************/
+RedBlackTreeItor RBTIPredecessor(RedBlackTreeItor itor);
 
 #endif
 
