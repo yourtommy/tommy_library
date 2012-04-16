@@ -23,6 +23,7 @@ typedef struct BinaryTreeItor
 typedef struct BinaryTree
 {
     BinaryTreeItor root_itor;
+    void *(*NewNodePtr)(); // Polymophism!!
 } BinaryTree;
 
 typedef struct BinarySortTreeItor

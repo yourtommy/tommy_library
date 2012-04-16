@@ -8,10 +8,18 @@
         .SUPER_MEMBER = bst_itor \
     }
 
+static void *
+RBTNewNode()
+{
+    return malloc(sizeof(RedBlackTreeNode));
+}
+
 bool RBTInit(RedBlackTree *treep)
 {
     if (!BSTInit(SUPER_PTR(treep)))
         return false;
+
+    ((BinaryTree *)treep)->NewNodePtr = &RBTNewNode;
 
     return true;
 }
@@ -31,6 +39,10 @@ RedBlackTreeItor RBTInsert(RedBlackTree *treep, int value)
     BinarySortTree *bstp = SUPER_PTR(treep);
     RedBlackTreeItor itor = BSTI_TO_RBTI(
             BSTInsert(bstp, value));
+    if (BTIEqual(SUPER(SUPER(itor)), 
+                BTRoot(SUPER_PTR(SUPER_PTR(treep))))) {
+        ((RedBlackTreeNode *)SUPER(SUPER(itor)).ptr)->red = false; // root needs to be black
+    }
     return itor;
 }
 

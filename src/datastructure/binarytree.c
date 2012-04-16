@@ -9,12 +9,19 @@ BTNullItor = {
     .tree_p = NULL,
 };
 
+static
+void *BTINewNode()
+{
+    return malloc(sizeof(BinaryTreeNode));
+}
+
 bool 
 BTInit(BinaryTree *treep)
 {
     if (treep == NULL)
         return false;
     treep->root_itor = BTNullItor;
+    treep->NewNodePtr = &BTINewNode;
     return true;
 }
 
@@ -41,7 +48,7 @@ BTAddRoot(BinaryTree *treep, int value)
 {
     if (treep == NULL || !BTINull(BTRoot(treep)))
         return BTNullItor;
-    BinaryTreeNode *node_p = malloc(sizeof(BinaryTreeNode));
+    BinaryTreeNode *node_p = treep->NewNodePtr();
     node_p->parent_p = NULL;
     node_p->left_child_p = NULL;
     node_p->right_child_p = NULL;
@@ -90,7 +97,7 @@ BTIAddLeftChild(BinaryTreeItor itor, int value)
 {
     if (BTINull(itor) || !BTINull(BTILeftChild(itor)))
         return BTNullItor;
-    BinaryTreeNode *nodep = malloc(sizeof(BinaryTreeNode));
+    BinaryTreeNode *nodep = itor.tree_p->NewNodePtr();
     nodep->parent_p = itor.ptr;
     nodep->left_child_p = nodep->right_child_p = NULL;
     nodep->value = value;
@@ -114,7 +121,7 @@ BTIAddRightChild(BinaryTreeItor itor, int value)
 {
     if (BTINull(itor) || !BTINull(BTIRightChild(itor)))
         return BTNullItor;
-    BinaryTreeNode *nodep = malloc(sizeof(BinaryTreeNode));
+    BinaryTreeNode *nodep = itor.tree_p->NewNodePtr();
     nodep->parent_p = itor.ptr;
     nodep->left_child_p = nodep->right_child_p = NULL;
     nodep->value = value;
