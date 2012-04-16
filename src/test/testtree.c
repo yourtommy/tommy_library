@@ -822,7 +822,7 @@ bool TestBinarySortTree()
     // test delete
     int k = 0;
     BinarySortTreeItor itor = BSTSearch(&bst, numbers[k]);
-    if (!BSTDelete(itor)) {
+    if (!BSTIDelete(itor)) {
         printf("BSTDelete failed\n");
         return false;
     }
@@ -848,6 +848,17 @@ bool TestBinarySortTree()
         return false;
     }
 
+    // test delete all
+    if (!BSTDeleteAll(&bst)) {
+        printf("Error: BSTDeleteAll falied\n");
+        return false;
+    }
+    if (!BSTEmpty(&bst)) {
+        printf("Error: BST is not empty after deleting all\n");
+        return false;
+    }
+
+    // test free
     if (!BSTFree(&bst)) {
         printf("BSTFree failed.\n");
         return false;
@@ -859,13 +870,14 @@ bool TestBinarySortTree()
 
 bool TestRedBlackTree()
 {
+    int i;
+
     RedBlackTree rbt;
     if (!RBTInit(&rbt)) {
         printf("RBTInit failed.\n");
         return false;
     }
 
-    int i;
     for (i = 0; i < length; i++) {
         if (RBTINull(RBTInsert(&rbt, numbers[i]))) {
             printf("RBTInsert failed.\n");
@@ -947,7 +959,7 @@ bool TestRedBlackTree()
     // test delete
     int k = 0;
     RedBlackTreeItor itor = RBTSearch(&rbt, numbers[k]);
-    if (!RBTDelete(itor)) {
+    if (!RBTIDelete(itor)) {
         printf("RBTDelete failed\n");
         return false;
     }
@@ -973,6 +985,176 @@ bool TestRedBlackTree()
         return false;
     }
 
+    // test delete all
+    if (!RBTDeleteAll(&rbt)) {
+        printf("Error: RBTDeleteAll falied\n");
+        return false;
+    }
+    if (!RBTEmpty(&rbt)) {
+        printf("Error: RBT is not empty after deleting all\n");
+        return false;
+    }
+
+    // test rotate
+    for (i = 0; i < 100; i += 3) {
+        RBTInsert(&rbt, i+2);
+        RBTInsert(&rbt, i+1);
+        RBTInsert(&rbt, i);
+    }
+    
+    // test left rotate
+    {
+        int rotate = 55;
+        RedBlackTreeItor rotate_rbt_itor = RBTSearch(&rbt, rotate);
+        BinaryTreeItor rotate_itor = SUPER(SUPER(rotate_rbt_itor));
+        BinaryTreeItor parent_itor = BTIParent(rotate_itor);
+        BinaryTreeItor left_child_itor = BTILeftChild(rotate_itor);
+        BinaryTreeItor right_child_itor = BTIRightChild(rotate_itor);
+        BinaryTreeItor right_left_child_itor = BTILeftChild(right_child_itor);
+
+        if (!RBTILeftRotate(rotate_rbt_itor)) {
+            printf("Error: RBTILeftRotate failed!\n");
+            return false;
+        }
+        BinaryTreeItor parent_itor_after = BTIParent(rotate_itor);
+        BinaryTreeItor left_child_itor_after = BTILeftChild(rotate_itor);
+        BinaryTreeItor right_child_itor_after = BTIRightChild(rotate_itor);
+
+        if (!BTIEqual(parent_itor_after, right_child_itor)) {
+            printf("Error: right child doesn't become parent after left rotate!\n");
+            return false;
+        }
+
+        if (!BTIEqual(parent_itor, BTIParent(right_child_itor))) {
+            printf("Error: parent doesn't become right child's parent after left rotate!\n");
+            return false;
+        }
+
+        if (!BTIEqual(left_child_itor_after, left_child_itor)) {
+            printf("Error: left child changed after left rotate!\n");
+            return false;
+        }
+
+        if (!BTIEqual(right_child_itor_after, right_left_child_itor)) {
+            printf("Error: right child's left child doesn't become right child after left rotate!\n");
+            return false;
+        }
+    }
+
+    // test right rotate
+    {
+        int rotate = 55;
+        RedBlackTreeItor rotate_rbt_itor = RBTSearch(&rbt, rotate);
+        BinaryTreeItor rotate_itor = SUPER(SUPER(rotate_rbt_itor));
+        BinaryTreeItor parent_itor = BTIParent(rotate_itor);
+        BinaryTreeItor left_child_itor = BTILeftChild(rotate_itor);
+        BinaryTreeItor right_child_itor = BTIRightChild(rotate_itor);
+        BinaryTreeItor left_right_child_itor = BTIRightChild(left_child_itor);
+
+        if (!RBTILeftRotate(rotate_rbt_itor)) {
+            printf("Error: RBTIRightRotate failed!\n");
+            return false;
+        }
+        BinaryTreeItor parent_itor_after = BTIParent(rotate_itor);
+        BinaryTreeItor left_child_itor_after = BTILeftChild(rotate_itor);
+        BinaryTreeItor right_child_itor_after = BTIRightChild(rotate_itor);
+
+        if (!BTIEqual(parent_itor_after, left_child_itor)) {
+            printf("Error: left child doesn't become parent after right rotate!\n");
+            return false;
+        }
+
+        if (!BTIEqual(parent_itor, BTIParent(left_child_itor))) {
+            printf("Error: parent doesn't become left child's parent after right rotate!\n");
+            return false;
+        }
+
+        if (!BTIEqual(right_child_itor_after, right_child_itor)) {
+            printf("Error: right child changed after right rotate!\n");
+            return false;
+        }
+
+        if (!BTIEqual(left_child_itor_after, left_right_child_itor)) {
+            printf("Error: left child's left child doesn't become left child after right rotate!\n");
+            return false;
+        }
+    }
+
+    // test left rotate on root
+    {
+        BinaryTreeItor root_itor = BTRoot(SUPER_PTR(SUPER_PTR(&rbt)));
+        BinaryTreeItor right_itor = BTIRightChild(root_itor); 
+        RedBlackTreeItor rotate_rbt_itor = { { root_itor } };
+        if (!RBTILeftRotate(rotate_rbt_itor)) {
+            printf("Error: left rotate on root failed!\n");
+            return false;
+        }
+        if (!BTIEqual(right_itor, BTRoot(SUPER_PTR(SUPER_PTR(&rbt))))) {
+            printf("Error: right child doesn't become root after left rotate root!\n");
+            return false;
+        }
+    }
+
+    // test right rotate on root
+    {
+        BinaryTreeItor root_itor = BTRoot(SUPER_PTR(SUPER_PTR(&rbt)));
+        BinaryTreeItor left_itor = BTILeftChild(root_itor); 
+        RedBlackTreeItor rotate_rbt_itor = { { root_itor } };
+        if (!RBTIRightRotate(rotate_rbt_itor)) {
+            printf("Error: right rotate on root failed!\n");
+            return false;
+        }
+        if (!BTIEqual(left_itor, BTRoot(SUPER_PTR(SUPER_PTR(&rbt))))) {
+            printf("Error: left child doesn't become root after right rotate root!\n");
+            return false;
+        }
+    }
+
+    // test rotate on right most
+    {
+        RedBlackTreeItor right_most_rbt_itor = RBTSearch(&rbt, 99);
+        BinaryTreeItor right_most_itor = SUPER(SUPER(right_most_rbt_itor)); 
+        if (BTINull(right_most_itor) || !BTINull(BTIRightChild(right_most_itor))) {
+            printf("Error: the max value is not the right most!\n");
+            return false;
+        }
+        if (RBTIRightRotate(right_most_rbt_itor)) {
+            printf("Error: RBTIRightRotate is allowed on right most node!\n");
+            return false;
+        }
+        if (!RBTILeftRotate(right_most_rbt_itor)) {
+            printf("Error: RBTILeftRotate failed on right most node!\n");
+            return false;
+        }
+        if (!BTINull(BTIRightChild(right_most_itor))) {
+            printf("Error: right most node's right is not null after left rotate!\n");
+            return false;
+        }
+    }
+
+    // test rotate on left most
+    {
+        RedBlackTreeItor left_most_rbt_itor = RBTSearch(&rbt, 0);
+        BinaryTreeItor left_most_itor = SUPER(SUPER(left_most_rbt_itor)); 
+        if (BTINull(left_most_itor) || !BTINull(BTILeftChild(left_most_itor))) {
+            printf("Error: the max value is not the left most!\n");
+            return false;
+        }
+        if (RBTILeftRotate(left_most_rbt_itor)) {
+            printf("Error: RBTILeftRotate is allowed on left most node!\n");
+            return false;
+        }
+        if (!RBTIRightRotate(left_most_rbt_itor)) {
+            printf("Error: RBTIRightRotate failed on left most node!\n");
+            return false;
+        }
+        if (!BTINull(BTILeftChild(left_most_itor))) {
+            printf("Error: left most node's left is not null after right rotate!\n");
+            return false;
+        }
+    }
+
+    // test free
     if (!RBTFree(&rbt)) {
         printf("RBTFree failed.\n");
         return false;

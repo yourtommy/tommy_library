@@ -17,22 +17,26 @@ static BinarySortTreeItor BSTNullItor = {
 };
 
 
-bool BSTInit(BinarySortTree *treep)
+bool 
+BSTInit(BinarySortTree *treep)
 {
     return BTInit(SUPER_PTR(treep));
 }
 
-bool BSTFree(BinarySortTree *treep)
+bool 
+BSTFree(BinarySortTree *treep)
 {
     return BTFree(SUPER_PTR(treep));
 }
 
-bool BSTEmpty(BinarySortTree *treep)
+bool 
+BSTEmpty(BinarySortTree *treep)
 {
     return BTEmpty(SUPER_PTR(treep));
 }
 
-BinarySortTreeItor BSTInsert(BinarySortTree *treep, int value)
+BinarySortTreeItor 
+BSTInsert(BinarySortTree *treep, int value)
 {
     BinaryTree *btp = SUPER_PTR(treep);
     if (BTEmpty(btp)) {
@@ -60,7 +64,36 @@ BinarySortTreeItor BSTInsert(BinarySortTree *treep, int value)
     return BTI_TO_BSTI(itor);
 }
 
-bool BSTDelete(BinarySortTreeItor itor)
+bool
+BSTDeleteAll(BinarySortTree *treep)
+{
+    return BTDeleteAll(SUPER_PTR(treep));
+}
+
+BinarySortTreeItor 
+BSTSearch(BinarySortTree *treep, int value)
+{
+    if (treep == NULL || BTEmpty(SUPER_PTR(treep)))
+        return BSTNullItor;
+    BinaryTreeItor itor = BTRoot(SUPER_PTR(treep));
+    while (!BTINull(itor) && BTIValue(itor) != value)
+        if (value < BTIValue(itor))
+            itor = BTILeftChild(itor);
+        else
+            itor = BTIRightChild(itor);
+    return (BinarySortTreeItor) { .SUPER_MEMBER = itor };
+}
+
+bool 
+BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp) 
+{
+    if (treep == NULL)
+        return false;
+    return BTInorderWalk(SUPER_PTR(treep), walkerp);
+}
+
+bool 
+BSTIDelete(BinarySortTreeItor itor)
 {
     if (BSTINull(itor))
         return false;
@@ -91,37 +124,20 @@ bool BSTDelete(BinarySortTreeItor itor)
     return true;
 }
 
-BinarySortTreeItor BSTSearch(BinarySortTree *treep, int value)
-{
-    if (treep == NULL || BTEmpty(SUPER_PTR(treep)))
-        return BSTNullItor;
-    BinaryTreeItor itor = BTRoot(SUPER_PTR(treep));
-    while (!BTINull(itor) && BTIValue(itor) != value)
-        if (value < BTIValue(itor))
-            itor = BTILeftChild(itor);
-        else
-            itor = BTIRightChild(itor);
-    return (BinarySortTreeItor) { .SUPER_MEMBER = itor };
-}
-
-bool BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp) 
-{
-    if (treep == NULL)
-        return false;
-    return BTInorderWalk(SUPER_PTR(treep), walkerp);
-}
-
-int BSTIValue(BinarySortTreeItor itor)
+int 
+BSTIValue(BinarySortTreeItor itor)
 {
     return BTIValue(SUPER(itor));
 }
 
-bool BSTINull(BinarySortTreeItor itor)
+bool 
+BSTINull(BinarySortTreeItor itor)
 {
     return BTINull(SUPER(itor));
 }
 
-BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor)
+BinarySortTreeItor 
+BSTISuccessor(BinarySortTreeItor itor)
 {
     if (BSTINull(itor))
         return BSTNullItor;
@@ -141,7 +157,8 @@ BinarySortTreeItor BSTISuccessor(BinarySortTreeItor itor)
     return (BinarySortTreeItor) { .SUPER_MEMBER=bt_itor };
 }
 
-BinarySortTreeItor BSTIPredecessor(BinarySortTreeItor itor)
+BinarySortTreeItor 
+BSTIPredecessor(BinarySortTreeItor itor)
 {
     if (BSTINull(itor))
         return BSTNullItor;

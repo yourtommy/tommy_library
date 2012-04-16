@@ -36,10 +36,16 @@ typedef struct BinarySortTree
     BinaryTree SUPER_MEMBER; /* extends BinaryTree */
 } BinarySortTree;
 
+typedef enum RedBlackTreeNodeColor
+{
+    RBTNC_RED,
+    RBTNC_BLACK,
+} RedBlackTreeNodeColor;
+
 typedef struct RedBlackTreeNode
 {
     BinaryTreeNode SUPER_MEMBER; /* extends BinaryTreeNode */
-    bool red;
+    RedBlackTreeNodeColor color;
 } RedBlackTreeNode;
 
 typedef struct RedBlackTree
@@ -212,9 +218,9 @@ bool BSTEmpty(BinarySortTree *treep);
 BinarySortTreeItor BSTInsert(BinarySortTree *treep, int value);
 
 /***********************************
- * Delete itor from its contained BST 
+ * Delete all nodes from BST 
  **********************************/
-bool BSTDelete(BinarySortTreeItor itor);
+bool BSTDeleteAll(BinarySortTree *treep);
 
 /***********************************
  * Delete itor from its contained BST 
@@ -225,6 +231,11 @@ BinarySortTreeItor BSTSearch(BinarySortTree *treep, int value);
  * Inorder tree walk
  **********************************/
 bool BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp); 
+
+/***********************************
+ * Delete itor from its contained BST 
+ **********************************/
+bool BSTIDelete(BinarySortTreeItor itor);
 
 /***********************************
  * Return the value of a binary tree itor.
@@ -275,7 +286,7 @@ RedBlackTreeItor RBTInsert(RedBlackTree *treep, int value);
 /***********************************
  * Delete itor from its contained RBT 
  **********************************/
-bool RBTDelete(RedBlackTreeItor itor);
+bool RBTDeleteAll(RedBlackTree *treep);
 
 /***********************************
  * Delete itor from its contained RBT 
@@ -286,6 +297,11 @@ RedBlackTreeItor RBTSearch(RedBlackTree *treep, int value);
  * Inorder tree walk
  **********************************/
 bool RBTInorderWalk(RedBlackTree *treep, TreeWalkerPtr walkerp); 
+
+/***********************************
+ * Delete itor from its contained RBT 
+ **********************************/
+bool RBTIDelete(RedBlackTreeItor itor);
 
 /***********************************
  * Return the value of a binary tree itor.
@@ -306,6 +322,18 @@ RedBlackTreeItor RBTISuccessor(RedBlackTreeItor itor);
  * Get itor's predecessor
  ***********************************/
 RedBlackTreeItor RBTIPredecessor(RedBlackTreeItor itor);
+
+/***********************************
+ * Don't use this API directly, since
+ * They are exposed just for test.
+ **********************************/
+bool RBTILeftRotate(RedBlackTreeItor itor);
+
+/***********************************
+ * Don't use this API directly since
+ * They are exposed just for test.
+ **********************************/
+bool RBTIRightRotate(RedBlackTreeItor itor);
 
 #endif
 
