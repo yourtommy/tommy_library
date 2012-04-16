@@ -68,7 +68,7 @@ bool TestBTAddRoot(BinaryTree *btp)
         return false;
     }
 
-    if (!BTAddRoot(btp, numbers[0])) {
+    if (BTINull(BTAddRoot(btp, numbers[0]))) {
         sprintf(error, "BTAddRoot failed");
         return false;
     }
@@ -128,11 +128,11 @@ bool TestBTLeftChild(BinaryTree *btp)
     // All insert to the left
     int i;
     for (i = 1; i < length; i++) {
-        if (!BTIAddLeftChild(itor, numbers[i])) {
+        if (BTINull(BTIAddLeftChild(itor, numbers[i]))) {
             sprintf(error, "BTIAddLeftChild failed");
             return false;
         }
-        if (BTIAddLeftChild(itor, -1)) {
+        if (!BTINull(BTIAddLeftChild(itor, -1))) {
             sprintf(error, "Itor already has a left child, but we can still add a left child to it");
             return false;
         }
@@ -219,11 +219,11 @@ bool TestBTRightChild(BinaryTree *btp)
     // All insert to the right
     int i;
     for (i = 1; i < length; i++) {
-        if (!BTIAddRightChild(itor, numbers[i])) {
+        if (BTINull(BTIAddRightChild(itor, numbers[i]))) {
             sprintf(error, "BTIAddRightChild failed");
             return false;
         }
-        if (BTIAddRightChild(itor, -1)) {
+        if (!BTINull(BTIAddRightChild(itor, -1))) {
             sprintf(error, "Itor already has a right child, but we can still add a right child to it");
             return false;
         }
@@ -321,14 +321,14 @@ bool TestBTBothChildren(BinaryTree *btp)
         while (!added) {
             BinaryTreeItor itor = itor_queue[qhead];
             if (BTINull(BTILeftChild(itor))) {
-                if (!BTIAddLeftChild(itor, value)) {
+                if (BTINull(BTIAddLeftChild(itor, value))) {
                     sprintf(error, "BTIAddLeftChild failed [%d]", i);
                     return false;
                 }
                 itor_queue[qtail++] = BTILeftChild(itor); // Enqueue
                 added = true;
             } else if (BTINull(BTIRightChild(itor))) {
-                if (!BTIAddRightChild(itor, value)) {
+                if (BTINull(BTIAddRightChild(itor, value))) {
                     sprintf(error, "BTIAddRightChild failed [%d]", i);
                     return false;
                 }
@@ -569,13 +569,13 @@ bool BuildPreorderTree(BinaryTreeItor itor, int begin, int end)
 
     int mid = (begin+end+1) / 2; // ceiling(mid(begin+1, end-1))
     if (begin < mid) {
-        if (!BTIAddLeftChild(itor, -1))
+        if (BTINull(BTIAddLeftChild(itor, -1)))
             return false;
         if (!BuildPreorderTree(BTILeftChild(itor), begin+1, mid+1))
             return false;
     }
     if (mid+1 < end) {
-        if (!BTIAddRightChild(itor, -1))
+        if (BTINull(BTIAddRightChild(itor, -1)))
             return false;
         if (!BuildPreorderTree(BTIRightChild(itor), mid+1, end))
             return false;
@@ -590,13 +590,13 @@ bool BuildInorderTree(BinaryTreeItor itor, int begin, int end)
     int mid = (begin+end) / 2; // ceiling(mid(begin, end-1))
     BTISetValue(itor, numbers[mid]);
     if (begin < mid) {
-        if (!BTIAddLeftChild(itor, -1))
+        if (BTINull(BTIAddLeftChild(itor, -1)))
             return false;
         if (!BuildInorderTree(BTILeftChild(itor), begin, mid))
             return false;
     }
     if (mid+1 < end) {
-        if (!BTIAddRightChild(itor, -1))
+        if (BTINull(BTIAddRightChild(itor, -1)))
             return false;
         if (!BuildInorderTree(BTIRightChild(itor), mid+1, end))
             return false;
@@ -614,13 +614,13 @@ bool BuildPostorderTree(BinaryTreeItor itor, int begin, int end)
         return true;
     int mid = (begin+end-1) / 2; // ceiling(mid(begin, end-2))
     if (mid > begin) {
-        if (!BTIAddLeftChild(itor, -1))
+        if (BTINull(BTIAddLeftChild(itor, -1)))
             return false;
         if (!BuildPostorderTree(BTILeftChild(itor), begin, mid))
             return false;
     }
     if (mid < end-1) {
-        if (!BTIAddRightChild(itor, -1))
+        if (BTINull(BTIAddRightChild(itor, -1)))
             return false;
         if (!BuildPostorderTree(BTIRightChild(itor), mid, end-1))
             return false;
@@ -742,7 +742,7 @@ bool TestBinarySortTree()
 
     int i;
     for (i = 0; i < length; i++) {
-        if (!BSTInsert(&bst, numbers[i])) {
+        if (BSTINull(BSTInsert(&bst, numbers[i]))) {
             printf("BSTInsert failed.\n");
             return false;
         }
@@ -867,7 +867,7 @@ bool TestRedBlackTree()
 
     int i;
     for (i = 0; i < length; i++) {
-        if (!RBTInsert(&rbt, numbers[i])) {
+        if (RBTINull(RBTInsert(&rbt, numbers[i]))) {
             printf("RBTInsert failed.\n");
             return false;
         }

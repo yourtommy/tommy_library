@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define BTI_TO_BSTI(bt_itor) \
+    (BinarySortTreeItor) { \
+        .SUPER_MEMBER = bt_itor \
+    }
+
 static BinarySortTreeItor BSTNullItor = { 
     .SUPER_MEMBER = (BinaryTreeItor) {
         .ptr = NULL,
@@ -27,34 +32,32 @@ bool BSTEmpty(BinarySortTree *treep)
     return BTEmpty(SUPER_PTR(treep));
 }
 
-bool BSTInsert(BinarySortTree *treep, int value)
+BinarySortTreeItor BSTInsert(BinarySortTree *treep, int value)
 {
     BinaryTree *btp = SUPER_PTR(treep);
     if (BTEmpty(btp)) {
-        BTAddRoot(btp, value);
-        return true;
+        return BTI_TO_BSTI(BTAddRoot(btp, value));
     }
+    
     BinaryTreeItor itor = BTRoot(btp);
     bool added = false;
     while (!added) {
         if (value < BTIValue(itor)) {
             if (BTINull(BTILeftChild(itor))) {
-                if (!BTIAddLeftChild(itor, value))
-                    return false;
+                itor = BTIAddLeftChild(itor, value);
                 added = true;
             } else
                 itor = BTILeftChild(itor);
         } else {
             if (BTINull(BTIRightChild(itor))) {
-                if (!BTIAddRightChild(itor, value))
-                    return false;
+                itor = BTIAddRightChild(itor, value);
                 added = true;
             } else
                 itor = BTIRightChild(itor);
         }
     }
             
-    return true;
+    return BTI_TO_BSTI(itor);
 }
 
 bool BSTDelete(BinarySortTreeItor itor)

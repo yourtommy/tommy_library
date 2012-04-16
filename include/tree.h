@@ -100,7 +100,7 @@ BinaryTreeItor BTRoot(BinaryTree *treep);
  * Set the root of a binary tree with value. 
  * It will fail if the tree is not empty. 
  ***********************************/
-bool BTAddRoot(BinaryTree *treep, int value);
+BinaryTreeItor BTAddRoot(BinaryTree *treep, int value);
 
 /***********************************
  * After freeing a tree you must init
@@ -127,7 +127,7 @@ BinaryTreeItor BTILeftChild(BinaryTreeItor itor);
  * Add a left child to itor.
  * It will fail if itor already has a left child.
  ***********************************/
-bool BTIAddLeftChild(BinaryTreeItor itor, int value);
+BinaryTreeItor BTIAddLeftChild(BinaryTreeItor itor, int value);
 
 /***********************************
  * Return the right child of a binary tree itor.
@@ -138,7 +138,7 @@ BinaryTreeItor BTIRightChild(BinaryTreeItor itor);
  * Add a right child to itor.
  * It will fail if itor already has a right child.
  ***********************************/
-bool BTIAddRightChild(BinaryTreeItor itor, int value);
+BinaryTreeItor BTIAddRightChild(BinaryTreeItor itor, int value);
 
 /***********************************
  * Return the parent of a binary tree itor.
@@ -208,7 +208,7 @@ bool BSTEmpty(BinarySortTree *treep);
 /***********************************
  * Insert value into treep
  **********************************/
-bool BSTInsert(BinarySortTree *treep, int value);
+BinarySortTreeItor BSTInsert(BinarySortTree *treep, int value);
 
 /***********************************
  * Delete itor from its contained BST 
@@ -269,7 +269,7 @@ bool RBTEmpty(RedBlackTree *treep);
 /***********************************
  * Insert value into treep
  **********************************/
-bool RBTInsert(RedBlackTree *treep, int value);
+RedBlackTreeItor RBTInsert(RedBlackTree *treep, int value);
 
 /***********************************
  * Delete itor from its contained RBT 

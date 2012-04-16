@@ -5,8 +5,8 @@
 
 // oop
 #define SUPER_MEMBER        __super
-#define SUPER_PTR(tp)       (&(tp->__super))
-#define SUPER(t)            (t.__super)
+#define SUPER_PTR(tp)       (&((tp)->SUPER_MEMBER))
+#define SUPER(t)            ((t).SUPER_MEMBER)
 
 #define UNUSED(p) (void)(p)
 
