@@ -8,6 +8,11 @@
         .SUPER_MEMBER = bst_itor \
     }
 
+#define BTI_TO_RBTI(bst_itor) \
+    (RedBlackTreeItor) { { bst_itor } }
+
+#define RBTI_PTR(itor)  ((struct RedBlackTreeNode *)(SUPER(SUPER(itor)).ptr))
+
 static RedBlackTreeItor RBTNullItor = { 
     { 
         {NULL, NULL} 
@@ -32,6 +37,63 @@ RBTISetColor(RedBlackTreeItor itor, RedBlackTreeNodeColor color)
     if (RBTINull(itor))
         return false;
     ((RedBlackTreeNode *)SUPER(SUPER(itor)).ptr)->color = color;
+    return true;
+}
+
+static bool 
+RBTIBlack(RedBlackTreeItor itor)
+{
+    return RBTINull(itor) || RBTIColor(itor) == RBTNC_BLACK;
+}
+
+static bool
+RBTIInsertFixup(RedBlackTreeItor itor)
+{
+    if (RBTINull(itor)) 
+        return false;
+
+    BinaryTreeItor bt_itor = SUPER(SUPER(itor));
+
+    // is root, fill it in black and return
+    if (BTIEqual(bt_itor, BTRoot(bt_itor.tree_p))) {
+        RBTISetColor(itor, RBTNC_BLACK);
+        return true;
+    }
+
+    BinaryTreeItor parent_bt_itor = BTIParent(bt_itor);
+    RedBlackTreeItor parent_itor = BTI_TO_RBTI(parent_bt_itor);
+
+    // parent is black
+    if (RBTIBlack(parent_itor))
+        return true;
+
+    BinaryTreeItor brother_bt_itor;
+    RedBlackTreeItor brother_itor;
+    if (BTIEqual(bt_itor, BTILeftChild(parent_bt_itor))) {       // left child
+        brother_bt_itor = BTIRightChild(parent_bt_itor);
+        brother_itor = BTI_TO_RBTI(brother_bt_itor);
+
+        BinaryTreeItor brother_lc_bt_itor = BTILeftChild(brother_bt_itor);
+        BinaryTreeItor brother_rc_bt_itor = BTIRightChild(brother_bt_itor);
+        RedBlackTreeItor brother_lc_itor = BTI_TO_RBTI(brother_lc_bt_itor);
+        RedBlackTreeItor brother_rc_itor = BTI_TO_RBTI(brother_rc_bt_itor);
+
+        // both red
+        if (!RBTIBlack(brother_lc_itor) && !RBTIBlack(brother_rc_itor)) {
+            RBTILeftRotate(parent_itor);
+            RBTISetColor(brother_itor, RBTNC_RED); // brother is now parent's parent
+            RBTISetColor(parent_itor, RBTNC_BLACK); // brother's left child is now parent's right child
+            RBTISetColor(brother_rc_itor, RBTNC_BLACK); // brother's right child is now parent's brother.
+            return RBTIInsertFixup(brother_itor);
+        }
+
+        // TODO
+    } else {                                      // right child
+        brother_bt_itor = BTILeftChild(parent_bt_itor);
+        // TODO
+    }
+
+    // TODO
     return true;
 }
 
@@ -64,17 +126,12 @@ RBTInsert(RedBlackTree *treep, int value)
     BinarySortTree *bstp = SUPER_PTR(treep);
     RedBlackTreeItor itor = BSTI_TO_RBTI(
             BSTInsert(bstp, value));
-    if (!RBTISetColor(itor, RBTNC_BLACK)) { // Newly added node is a leaf and black
+    if (!RBTISetColor(itor, RBTNC_RED) // Newly added node is a leaf and red 
+            || !RBTIInsertFixup(itor)) { 
         BSTIDelete(SUPER(itor));
         return RBTNullItor;
     }
 
-    // no need to rotate if it's root now
-    if (BTIEqual(SUPER(SUPER(itor)), 
-                BTRoot(SUPER_PTR(SUPER_PTR(treep))))) {
-        RBTIColor(itor); // TODO: remove
-        return itor;
-    }
     return itor;
 }
 
