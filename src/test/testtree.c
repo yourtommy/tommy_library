@@ -871,21 +871,218 @@ bool TestBinarySortTree()
 bool TestRedBlackTree()
 {
     int i;
-
     RedBlackTree rbt;
+
+    // test init
     if (!RBTInit(&rbt)) {
         printf("RBTInit failed.\n");
         return false;
     }
+    if (!RBTEmpty(&rbt)) {
+        printf("Error: RBT is not empty after init\n");
+        return false;
+    }
 
+    // test rotate (the tree is empty now)
     for (i = 0; i < length; i++) {
         if (RBTINull(RBTInsert(&rbt, numbers[i]))) {
-            printf("RBTInsert failed.\n");
+            printf("RBTInsert failed (rotate).\n");
             return false;
         }
     }
+
+    for (i = 0; i < length; i++) {
+        RedBlackTreeItor rbt_itor = RBTSearch(&rbt, numbers[i]);
+        if (RBTINull(rbt_itor)) {
+            printf("Error: cannot find value %d!\n", i);
+            return false;
+        } 
+        BinaryTreeItor itor = SUPER(SUPER(rbt_itor)); 
+
+        // test rotate on left most
+        if (BTINull(BTILeftChild(itor)))
+        {
+            if (RBTIRightRotate(rbt_itor)) {
+                printf("Error: RBTILeftRotate is allowed on left most node [%d]! \n", i);
+                return false;
+            }
+            BinaryTreeItor right_itor = BTIRightChild(itor);
+            RedBlackTreeItor right_rbt_itor = {{right_itor}};
+            if (!BTINull(right_itor)) {
+                if (!RBTILeftRotate(rbt_itor)) {
+                    printf("Error: RBTIRightRotate failed on left most node [%d]!\n", i);
+                    return false;
+                }
+                if (!BTINull(BTILeftChild(itor))) {
+                    printf("Error: left most node's left is not null after right rotate [%d]!\n", i);
+                    return false;
+                }
+                if (!RBTIRightRotate(right_rbt_itor)) { // rotate it back
+                    printf("Error: cannot rotate back the left most [%d]!\n", i);
+                    return false;
+                }
+            }
+            continue;
+        }
+
+        // test rotate on right most
+        if (BTINull(BTIRightChild(itor))) {
+            if (RBTILeftRotate(rbt_itor)) {
+                printf("Error: RBTIRightRotate is allowed on right most node [%d]!\n", i);
+                return false;
+            }
+            BinaryTreeItor left_itor = BTILeftChild(itor);
+            RedBlackTreeItor left_rbt_itor = {{left_itor}};
+            if (!BTINull(left_itor)) {
+                if (!RBTIRightRotate(rbt_itor)) {
+                    printf("Error: RBTILeftRotate failed on right most node [%d]!\n", i);
+                    return false;
+                }
+                if (!BTINull(BTIRightChild(itor))) {
+                    printf("Error: right most node's right is not null after left rotate [%d]!\n", i);
+                    return false;
+                }
+                if (!RBTILeftRotate(left_rbt_itor)) { // rotate it back
+                    printf("Error: cannot rotate back the right most [%d]!\n", i);
+                    return false;
+                }
+            }
+            continue;
+        }
+
+        if (BTIEqual(itor, BTRoot(itor.tree_p))) {
+            BinaryTreeItor left_itor = BTILeftChild(itor);
+            BinaryTreeItor right_itor = BTIRightChild(itor);
+            RedBlackTreeItor left_rbt_itor = {{left_itor}};
+            RedBlackTreeItor right_rbt_itor = {{right_itor}};
+
+            // test left rotate on root
+            if (!BTINull(right_itor)) {
+                if (!RBTILeftRotate(rbt_itor)) {
+                    printf("Error: left rotate on root failed [%d]!\n", numbers[i]);
+                    return false;
+                }
+                if (!BTIEqual(right_itor, BTRoot(SUPER_PTR(SUPER_PTR(&rbt))))) {
+                    printf("Error: right child doesn't become root after left rotate root [%d]!\n", numbers[i]);
+                    return false;
+                }
+                if (!RBTIRightRotate(right_rbt_itor)) { // rotate it back
+                    printf("Error: cannot rotate back after left rotate the root [%d]!\n", numbers[i]);
+                    return false;
+                }
+            }
+
+            // test right rotate on root
+            if (!BTINull(left_itor)) {
+                if (!RBTIRightRotate(rbt_itor)) {
+                    printf("Error: right rotate on root failed %d!\n", numbers[i]);
+                    return false;
+                }
+                if (!BTIEqual(left_itor, BTRoot(SUPER_PTR(SUPER_PTR(&rbt))))) {
+                    printf("Error: left child doesn't become root after right rotate root!\n");
+                    return false;
+                }
+                if (!RBTILeftRotate(left_rbt_itor)) { // rotate it back
+                    printf("Error: cannot rotate back after right rotate the root [%d]!\n", numbers[i]);
+                    return false;
+                }
+            }
+
+            continue;
+        }
+
+        // test left rotate
+        {
+            BinaryTreeItor parent_itor = BTIParent(itor);
+            BinaryTreeItor left_child_itor = BTILeftChild(itor);
+            BinaryTreeItor right_child_itor = BTIRightChild(itor);
+            BinaryTreeItor right_left_child_itor = BTILeftChild(right_child_itor);
+
+            if (!RBTILeftRotate(rbt_itor)) {
+                printf("Error: RBTILeftRotate %d failed!\n", numbers[i]);
+                return false;
+            }
+            BinaryTreeItor parent_itor_after = BTIParent(itor);
+            BinaryTreeItor left_child_itor_after = BTILeftChild(itor);
+            BinaryTreeItor right_child_itor_after = BTIRightChild(itor);
+
+            if (!BTIEqual(parent_itor_after, right_child_itor)) {
+                printf("Error: right child doesn't become parent after left rotate!\n");
+                return false;
+            }
+
+            if (!BTIEqual(parent_itor, BTIParent(right_child_itor))) {
+                printf("Error: parent doesn't become right child's parent after left rotate!\n");
+                return false;
+            }
+
+            if (!BTIEqual(left_child_itor_after, left_child_itor)) {
+                printf("Error: left child changed after left rotate!\n");
+                return false;
+            }
+
+            if (!BTIEqual(right_child_itor_after, right_left_child_itor)) {
+                printf("Error: right child's left child doesn't become right child after left rotate!\n");
+                return false;
+            }
+        }
+
+        // test right rotate (rotate back what the previous step produced)
+        {
+            BinaryTreeItor parent_itor = BTIParent(itor);
+            BinaryTreeItor left_child_itor = BTILeftChild(itor);
+            BinaryTreeItor right_child_itor = BTIRightChild(itor);
+            BinaryTreeItor left_right_child_itor = BTIRightChild(left_child_itor);
+
+            if (!RBTIRightRotate(rbt_itor)) {
+                printf("Error: RBTIRightRotate failed!\n");
+                return false;
+            }
+            BinaryTreeItor parent_itor_after = BTIParent(itor);
+            BinaryTreeItor left_child_itor_after = BTILeftChild(itor);
+            BinaryTreeItor right_child_itor_after = BTIRightChild(itor);
+
+            if (!BTIEqual(parent_itor_after, left_child_itor)) {
+                printf("Error: left child doesn't become parent after right rotate!\n");
+                return false;
+            }
+
+            if (!BTIEqual(parent_itor, BTIParent(left_child_itor))) {
+                printf("Error: parent doesn't become left child's parent after right rotate!\n");
+                return false;
+            }
+
+            if (!BTIEqual(right_child_itor_after, right_child_itor)) {
+                printf("Error: right child changed after right rotate!\n");
+                return false;
+            }
+
+            if (!BTIEqual(left_child_itor_after, left_right_child_itor)) {
+                printf("Error: left child's left child doesn't become left child after right rotate!\n");
+                return false;
+            }
+        }
+    }
+
     
+    // test delete all
+    if (!RBTDeleteAll(&rbt)) {
+        printf("Error: RBTDeleteAll falied\n");
+        return false;
+    }
+    if (!RBTEmpty(&rbt)) {
+        printf("Error: RBT is not empty after deleting all\n");
+        return false;
+    }
+
     // Test sort (inorder walk)
+    for (i = 0; i < length; i++) {
+        if (RBTINull(RBTInsert(&rbt, numbers[i]))) {
+            printf("RBTInsert failed (sort).\n");
+            return false;
+        }
+    }
+
     walked_array = alloca(sizeof(int) * length);
     walked_count = 0;
     if (!RBTInorderWalk(&rbt, &WalkBST)) {
@@ -983,175 +1180,6 @@ bool TestRedBlackTree()
     if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[k]) {
         printf("Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
         return false;
-    }
-
-    // test delete all
-    if (!RBTDeleteAll(&rbt)) {
-        printf("Error: RBTDeleteAll falied\n");
-        return false;
-    }
-    if (!RBTEmpty(&rbt)) {
-        printf("Error: RBT is not empty after deleting all\n");
-        return false;
-    }
-
-    // test rotate
-    for (i = 0; i < 100; i += 3) {
-        RBTInsert(&rbt, i+2);
-        RBTInsert(&rbt, i+1);
-        RBTInsert(&rbt, i);
-    }
-    
-    // test left rotate
-    {
-        int rotate = 55;
-        RedBlackTreeItor rotate_rbt_itor = RBTSearch(&rbt, rotate);
-        BinaryTreeItor rotate_itor = SUPER(SUPER(rotate_rbt_itor));
-        BinaryTreeItor parent_itor = BTIParent(rotate_itor);
-        BinaryTreeItor left_child_itor = BTILeftChild(rotate_itor);
-        BinaryTreeItor right_child_itor = BTIRightChild(rotate_itor);
-        BinaryTreeItor right_left_child_itor = BTILeftChild(right_child_itor);
-
-        if (!RBTILeftRotate(rotate_rbt_itor)) {
-            printf("Error: RBTILeftRotate failed!\n");
-            return false;
-        }
-        BinaryTreeItor parent_itor_after = BTIParent(rotate_itor);
-        BinaryTreeItor left_child_itor_after = BTILeftChild(rotate_itor);
-        BinaryTreeItor right_child_itor_after = BTIRightChild(rotate_itor);
-
-        if (!BTIEqual(parent_itor_after, right_child_itor)) {
-            printf("Error: right child doesn't become parent after left rotate!\n");
-            return false;
-        }
-
-        if (!BTIEqual(parent_itor, BTIParent(right_child_itor))) {
-            printf("Error: parent doesn't become right child's parent after left rotate!\n");
-            return false;
-        }
-
-        if (!BTIEqual(left_child_itor_after, left_child_itor)) {
-            printf("Error: left child changed after left rotate!\n");
-            return false;
-        }
-
-        if (!BTIEqual(right_child_itor_after, right_left_child_itor)) {
-            printf("Error: right child's left child doesn't become right child after left rotate!\n");
-            return false;
-        }
-    }
-
-    // test right rotate
-    {
-        int rotate = 55;
-        RedBlackTreeItor rotate_rbt_itor = RBTSearch(&rbt, rotate);
-        BinaryTreeItor rotate_itor = SUPER(SUPER(rotate_rbt_itor));
-        BinaryTreeItor parent_itor = BTIParent(rotate_itor);
-        BinaryTreeItor left_child_itor = BTILeftChild(rotate_itor);
-        BinaryTreeItor right_child_itor = BTIRightChild(rotate_itor);
-        BinaryTreeItor left_right_child_itor = BTIRightChild(left_child_itor);
-
-        if (!RBTILeftRotate(rotate_rbt_itor)) {
-            printf("Error: RBTIRightRotate failed!\n");
-            return false;
-        }
-        BinaryTreeItor parent_itor_after = BTIParent(rotate_itor);
-        BinaryTreeItor left_child_itor_after = BTILeftChild(rotate_itor);
-        BinaryTreeItor right_child_itor_after = BTIRightChild(rotate_itor);
-
-        if (!BTIEqual(parent_itor_after, left_child_itor)) {
-            printf("Error: left child doesn't become parent after right rotate!\n");
-            return false;
-        }
-
-        if (!BTIEqual(parent_itor, BTIParent(left_child_itor))) {
-            printf("Error: parent doesn't become left child's parent after right rotate!\n");
-            return false;
-        }
-
-        if (!BTIEqual(right_child_itor_after, right_child_itor)) {
-            printf("Error: right child changed after right rotate!\n");
-            return false;
-        }
-
-        if (!BTIEqual(left_child_itor_after, left_right_child_itor)) {
-            printf("Error: left child's left child doesn't become left child after right rotate!\n");
-            return false;
-        }
-    }
-
-    // test left rotate on root
-    {
-        BinaryTreeItor root_itor = BTRoot(SUPER_PTR(SUPER_PTR(&rbt)));
-        BinaryTreeItor right_itor = BTIRightChild(root_itor); 
-        RedBlackTreeItor rotate_rbt_itor = { { root_itor } };
-        if (!RBTILeftRotate(rotate_rbt_itor)) {
-            printf("Error: left rotate on root failed!\n");
-            return false;
-        }
-        if (!BTIEqual(right_itor, BTRoot(SUPER_PTR(SUPER_PTR(&rbt))))) {
-            printf("Error: right child doesn't become root after left rotate root!\n");
-            return false;
-        }
-    }
-
-    // test right rotate on root
-    {
-        BinaryTreeItor root_itor = BTRoot(SUPER_PTR(SUPER_PTR(&rbt)));
-        BinaryTreeItor left_itor = BTILeftChild(root_itor); 
-        RedBlackTreeItor rotate_rbt_itor = { { root_itor } };
-        if (!RBTIRightRotate(rotate_rbt_itor)) {
-            printf("Error: right rotate on root failed!\n");
-            return false;
-        }
-        if (!BTIEqual(left_itor, BTRoot(SUPER_PTR(SUPER_PTR(&rbt))))) {
-            printf("Error: left child doesn't become root after right rotate root!\n");
-            return false;
-        }
-    }
-
-    // test rotate on right most
-    {
-        RedBlackTreeItor right_most_rbt_itor = RBTSearch(&rbt, 99);
-        BinaryTreeItor right_most_itor = SUPER(SUPER(right_most_rbt_itor)); 
-        if (BTINull(right_most_itor) || !BTINull(BTIRightChild(right_most_itor))) {
-            printf("Error: the max value is not the right most!\n");
-            return false;
-        }
-        if (RBTIRightRotate(right_most_rbt_itor)) {
-            printf("Error: RBTIRightRotate is allowed on right most node!\n");
-            return false;
-        }
-        if (!RBTILeftRotate(right_most_rbt_itor)) {
-            printf("Error: RBTILeftRotate failed on right most node!\n");
-            return false;
-        }
-        if (!BTINull(BTIRightChild(right_most_itor))) {
-            printf("Error: right most node's right is not null after left rotate!\n");
-            return false;
-        }
-    }
-
-    // test rotate on left most
-    {
-        RedBlackTreeItor left_most_rbt_itor = RBTSearch(&rbt, 0);
-        BinaryTreeItor left_most_itor = SUPER(SUPER(left_most_rbt_itor)); 
-        if (BTINull(left_most_itor) || !BTINull(BTILeftChild(left_most_itor))) {
-            printf("Error: the max value is not the left most!\n");
-            return false;
-        }
-        if (RBTILeftRotate(left_most_rbt_itor)) {
-            printf("Error: RBTILeftRotate is allowed on left most node!\n");
-            return false;
-        }
-        if (!RBTIRightRotate(left_most_rbt_itor)) {
-            printf("Error: RBTIRightRotate failed on left most node!\n");
-            return false;
-        }
-        if (!BTINull(BTILeftChild(left_most_itor))) {
-            printf("Error: left most node's left is not null after right rotate!\n");
-            return false;
-        }
     }
 
     // test free

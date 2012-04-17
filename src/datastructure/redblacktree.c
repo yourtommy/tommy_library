@@ -129,15 +129,74 @@ RBTIPredecessor(RedBlackTreeItor itor)
 bool 
 RBTILeftRotate(RedBlackTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return false;
+    if (RBTINull(itor))
+        return false;
+
+    BinaryTreeItor bt_itor = SUPER(SUPER(itor));
+    BinaryTreeItor right_child_itor = BTIRightChild(bt_itor);
+
+    if (BTINull(right_child_itor))
+        return false;
+
+    // parent <-> right child
+    if (BTIEqual(bt_itor, BTRoot(bt_itor.tree_p)))
+        bt_itor.tree_p->root_itor = right_child_itor; // reset root
+    else {
+        if (bt_itor.ptr == bt_itor.ptr->parent_p->left_child_p)
+            bt_itor.ptr->parent_p->left_child_p = right_child_itor.ptr;
+        else
+            bt_itor.ptr->parent_p->right_child_p = right_child_itor.ptr;
+    }
+    right_child_itor.ptr->parent_p = bt_itor.ptr->parent_p;
+
+    // this <-> right's left
+    bt_itor.ptr->right_child_p = right_child_itor.ptr->left_child_p;
+    if (right_child_itor.ptr->left_child_p != NULL)
+        right_child_itor.ptr->left_child_p->parent_p = bt_itor.ptr;
+    bt_itor.ptr->right_child_p = right_child_itor.ptr->left_child_p;
+
+    // this <-> right
+    bt_itor.ptr->parent_p = right_child_itor.ptr;
+    right_child_itor.ptr->left_child_p = bt_itor.ptr;
+
+    // reset root
+    if (BTIEqual(bt_itor, BTRoot(bt_itor.tree_p)))
+        bt_itor.tree_p->root_itor = right_child_itor;
+    return true;
 }
 
 bool 
 RBTIRightRotate(RedBlackTreeItor itor)
 {
-    // TODO
-    UNUSED(itor);
-    return false;
+    if (RBTINull(itor))
+        return false;
+
+    BinaryTreeItor bt_itor = SUPER(SUPER(itor));
+    BinaryTreeItor left_child_itor = BTILeftChild(bt_itor);
+
+    if (BTINull(left_child_itor))
+        return false;
+
+    // parent <-> left child
+    if (BTIEqual(bt_itor, BTRoot(bt_itor.tree_p)))
+        bt_itor.tree_p->root_itor = left_child_itor; // reset root
+    else {
+        if (bt_itor.ptr == bt_itor.ptr->parent_p->right_child_p)
+            bt_itor.ptr->parent_p->right_child_p = left_child_itor.ptr;
+        else
+            bt_itor.ptr->parent_p->left_child_p = left_child_itor.ptr;
+    }
+    left_child_itor.ptr->parent_p = bt_itor.ptr->parent_p;
+
+    // this <-> left's right
+    bt_itor.ptr->left_child_p = left_child_itor.ptr->right_child_p;
+    if (left_child_itor.ptr->right_child_p != NULL)
+        left_child_itor.ptr->right_child_p->parent_p = bt_itor.ptr;
+    bt_itor.ptr->left_child_p = left_child_itor.ptr->right_child_p;
+
+    // this <-> left
+    bt_itor.ptr->parent_p = left_child_itor.ptr;
+    left_child_itor.ptr->right_child_p = bt_itor.ptr;
+
+    return true;
 }
