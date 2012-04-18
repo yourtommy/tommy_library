@@ -117,43 +117,11 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          ******************************/
 
         /************* CASE 2 **********
-         * { red uncle, left itor }
+         * { black uncle, right itor }
          *
          *  grandparent-> B 
          *               / \
-         *     parent-> R   R <-uncle
-         *             / \
-         *     itor-> R   B <-brother 
-         *
-         *               ||
-         * right rotate \||/ 
-         *               \/
-         *
-         *       parent-> R
-         *               / \
-         *       itor-> R   B <-grandparent
-         *                 / \
-         *      brother-> B   R <-uncle    
-         *
-         *               ||
-         * change color \||/ 
-         *               \/
-         *
-         *       parent-> R
-         *               / \
-         *       itor-> B~  B <-grandparent
-         *                 / \
-         *      brother-> B   R <-uncle    
-         *
-         * { continue: itor => parent }
-         ******************************/
-
-        /************* CASE 3 **********
-         * { arbitrary uncle, right itor }
-         *
-         *  grandparent-> B 
-         *               / \
-         *     parent-> R   x <-uncle
+         *     parent-> R   B <-uncle
          *             / \
          *  brother-> B   R <-itor
          *
@@ -163,19 +131,160 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          *
          *  grandparent-> B
          *               / \
-         *       itor-> R   x <-uncle
+         *       itor-> R   B <-uncle
          *             / \
          *   parent-> R    
          *           /
          *brother-> B
          *
-         * { continue: itor => parent }
+         * { continue: itor => parent (case 1) }
+         ******************************/
+
+        /************* CASE 3 **********
+         * { red uncle, arbitary itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *     parent-> R   R <-uncle
+         *             / \
+         *     itor-> R   B <-brother 
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *  grandparent-> R 
+         *               / \
+         *     parent-> B   B <-uncle
+         *             / \
+         *     itor-> R   B <-brother 
+         *
+         * OR
+         *
+         *  grandparent-> B 
+         *               / \
+         *     parent-> R   R <-uncle
+         *             / \
+         *  brother-> B   R <-itor 
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *  grandparent-> R 
+         *               / \
+         *     parent-> B   B <-uncle
+         *             / \
+         *  brother-> B   R <-itor 
+         *
+         * { continue: itor => grandparent }
          ******************************/
     }
     // parent is a right child
     else {
         uncle_bt_itor = BTILeftChild(grandparent_bt_itor);
         uncle_itor = BTI_TO_RBTI(uncle_bt_itor);
+
+        /***************** Precondition ***************
+         * if parent is red, then
+         * bother and grandparent are both black
+         ***********************************************/
+
+        /************* CASE 1 **********
+         * { black uncle, right itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *      uncle-> B   R <-parent
+         *                 / \
+         *      brother-> B   R <-itor 
+         *
+         *               ||
+         *  left rotate \||/ 
+         *               \/
+         *
+         *       parent-> R
+         *               / \
+         *grandparent-> B   R <-itor
+         *             / \
+         *    uncle-> B   B <-brother
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *       parent-> B~
+         *               / \
+         *grandparent-> R~  R <-itor
+         *             / \
+         *    uncle-> B   B <-brother    
+         *
+         * { fixup complete }
+         ******************************/
+
+        /************* CASE 2 **********
+         * { black uncle, left itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *      uncle-> B   R <-parent
+         *                 / \
+         *         itor-> R   B <-brother
+         *
+         *               ||
+         *  left rotate \||/ 
+         *               \/
+         *
+         *  grandparent-> B
+         *               / \
+         *      uncle-> B   R <-itor
+         *                 / \
+         *                    R <-parent
+         *                     \
+         *                      B <-brother
+         *
+         * { continue: itor => parent (case 1) }
+         ******************************/
+
+        /************* CASE 3 **********
+         * { red uncle, arbitary itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *      uncle-> R   R <-parent
+         *                 / \
+         *      brother-> B   R <-itor
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *  grandparent-> R 
+         *               / \
+         *      uncle-> B   B <-parent
+         *                 / \
+         *      brother-> B   R <-itor
+         *
+         * OR
+         *
+         *  grandparent-> B 
+         *               / \
+         *      uncle-> R   R <-parent
+         *                 / \
+         *         itor-> R   B <-brother
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *  grandparent-> R 
+         *               / \
+         *      uncle-> B   B <-parent
+         *                 / \
+         *         itor-> R   B <-brother
+         *
+         * { continue: itor => grandparent }
+         ******************************/
     }
 
     // TODO
