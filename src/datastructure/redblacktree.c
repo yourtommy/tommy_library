@@ -67,33 +67,120 @@ RBTIInsertFixup(RedBlackTreeItor itor)
     if (RBTIBlack(parent_itor))
         return true;
 
-    BinaryTreeItor brother_bt_itor;
-    RedBlackTreeItor brother_itor;
-    if (BTIEqual(bt_itor, BTILeftChild(parent_bt_itor))) {       // left child
-        brother_bt_itor = BTIRightChild(parent_bt_itor);
-        brother_itor = BTI_TO_RBTI(brother_bt_itor);
+    // parent is red, then it can't be the root, so itor must have a grandparent
+    BinaryTreeItor grandparent_bt_itor = BTIParent(BTIParent(bt_itor));
+    RedBlackTreeItor grandparent_itor = BTI_TO_RBTI(grandparent_bt_itor);
 
-        BinaryTreeItor brother_lc_bt_itor = BTILeftChild(brother_bt_itor);
-        BinaryTreeItor brother_rc_bt_itor = BTIRightChild(brother_bt_itor);
-        RedBlackTreeItor brother_lc_itor = BTI_TO_RBTI(brother_lc_bt_itor);
-        RedBlackTreeItor brother_rc_itor = BTI_TO_RBTI(brother_rc_bt_itor);
+    BinaryTreeItor uncle_bt_itor;
+    RedBlackTreeItor uncle_itor;
 
-        // both red
-        if (!RBTIBlack(brother_lc_itor) && !RBTIBlack(brother_rc_itor)) {
-            RBTILeftRotate(parent_itor);
-            RBTISetColor(brother_itor, RBTNC_RED); // brother is now parent's parent
-            RBTISetColor(parent_itor, RBTNC_BLACK); // brother's left child is now parent's right child
-            RBTISetColor(brother_rc_itor, RBTNC_BLACK); // brother's right child is now parent's brother.
-            return RBTIInsertFixup(brother_itor);
-        }
+    // parent is a left child
+    if (BTIEqual(parent_bt_itor, BTILeftChild(grandparent_bt_itor))) {
+        uncle_bt_itor = BTIRightChild(grandparent_bt_itor);
+        uncle_itor = BTI_TO_RBTI(uncle_bt_itor);
 
-        // TODO
-    } else {                                      // right child
-        brother_bt_itor = BTILeftChild(parent_bt_itor);
-        // TODO
+        /***************** Precondition ***************
+         * if parent is red, then
+         * bother and grandparent are both black
+         ***********************************************/
+
+        /************* CASE 1 **********
+         * { black uncle, left itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *     parent-> R   B <-uncle
+         *             / \
+         *     itor-> R   B <-brother 
+         *
+         *               ||
+         * right rotate \||/ 
+         *               \/
+         *
+         *       parent-> R
+         *               / \
+         *       itor-> R   B <-grandparent
+         *                 / \
+         *      brother-> B   B <-uncle    
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *       parent-> B~
+         *               / \
+         *       itor-> R   R~ <-grandparent
+         *                 / \
+         *      brother-> B   B <-uncle    
+         *
+         * { fixup complete }
+         ******************************/
+
+        /************* CASE 2 **********
+         * { red uncle, left itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *     parent-> R   R <-uncle
+         *             / \
+         *     itor-> R   B <-brother 
+         *
+         *               ||
+         * right rotate \||/ 
+         *               \/
+         *
+         *       parent-> R
+         *               / \
+         *       itor-> R   B <-grandparent
+         *                 / \
+         *      brother-> B   R <-uncle    
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *       parent-> R
+         *               / \
+         *       itor-> B~  B <-grandparent
+         *                 / \
+         *      brother-> B   R <-uncle    
+         *
+         * { continue: itor => parent }
+         ******************************/
+
+        /************* CASE 3 **********
+         * { arbitrary uncle, right itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *     parent-> R   x <-uncle
+         *             / \
+         *  brother-> B   R <-itor
+         *
+         *               ||
+         *  left rotate \||/ 
+         *               \/
+         *
+         *  grandparent-> B
+         *               / \
+         *       itor-> R   x <-uncle
+         *             / \
+         *   parent-> R    
+         *           /
+         *brother-> B
+         *
+         * { continue: itor => parent }
+         ******************************/
+    }
+    // parent is a right child
+    else {
+        uncle_bt_itor = BTILeftChild(grandparent_bt_itor);
+        uncle_itor = BTI_TO_RBTI(uncle_bt_itor);
     }
 
     // TODO
+    UNUSED(grandparent_itor);
+    UNUSED(uncle_itor);
     return true;
 }
 
