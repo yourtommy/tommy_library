@@ -116,6 +116,13 @@ BinaryTreeItor BTAddRoot(BinaryTree *treep, int value);
 bool BTDeleteAll(BinaryTree *treep);
 
 /***********************************
+ * Get the height of treep
+ * A tree with only one node (the root) has a depth of zero.
+ * while one with no node has a depth of -1.
+ **********************************/
+int BTHeight(BinaryTree *treep);
+
+/***********************************
  * Check whether a binrary tree itor is null.
  ***********************************/
 bool BTINull(BinaryTreeItor itor);

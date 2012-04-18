@@ -181,6 +181,12 @@ bool TestBTLeftChild(BinaryTree *btp)
         return false;
     }
 
+    // Test height
+    if (BTHeight(btp) != length - 1) {
+        sprintf(error, "Binary Tree's height (%d) doesn't equal to (%d) after inserting left child nodes\n", BTHeight(btp), length - 1);
+        return false;
+    }
+
     // Delete all the nodes we just added
     int deleted = 0;
     itor = BTRoot(btp);
@@ -272,6 +278,12 @@ bool TestBTRightChild(BinaryTree *btp)
         return false;
     }
 
+    // Test height
+    if (BTHeight(btp) != length - 1) {
+        sprintf(error, "Binary Tree's height (%d) doesn't equal to (%d) after inserting right child nodes\n", BTHeight(btp), length - 1);
+        return false;
+    }
+
     // Delete all the nodes we just added
     int deleted = 0;
     itor = BTRoot(btp);
@@ -358,6 +370,12 @@ bool TestBTBothChildren(BinaryTree *btp)
     }
     if (count != length) {
         sprintf(error, "The number of tree nodes [%d] is smaller then length [%d]", count, length);
+        return false;
+    }
+
+    // Test height
+    if (BTHeight(btp) != (int)log2(length)) {
+        sprintf(error, "Binary Tree's height (%d) doesn't equal to (%d) after inserting both left and right children\n", BTHeight(btp), (int)log2(length));
         return false;
     }
 
@@ -1075,14 +1093,21 @@ bool TestRedBlackTree()
         return false;
     }
 
-    // Test sort (inorder walk)
+    // Test insert 
     for (i = 0; i < length; i++) {
         if (RBTINull(RBTInsert(&rbt, numbers[i]))) {
             printf("RBTInsert failed (sort).\n");
             return false;
         }
+        // Test height
+        int height = BTHeight(SUPER_PTR(SUPER_PTR(&rbt)));
+        if (height != (int)log2(i+1)) {
+            printf("Red Black Tree's height (%d) doesn't equal to floor(log2_%d) - (%d) after insert\n", height, i+1, (int)log2(i+1));
+            return false;
+        }
     }
-
+    
+    // Test sort (inorder walk)
     walked_array = alloca(sizeof(int) * length);
     walked_count = 0;
     if (!RBTInorderWalk(&rbt, &WalkBST)) {
