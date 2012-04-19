@@ -25,7 +25,7 @@ RBTNewNode()
     return malloc(sizeof(RedBlackTreeNode));
 }
 
-static bool
+bool
 RBTIColor(RedBlackTreeItor itor)
 {
     return ((RedBlackTreeNode *)SUPER(SUPER(itor)).ptr)->color;
@@ -84,7 +84,36 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          * bother and grandparent are both black
          ***********************************************/
 
-        /************* CASE 1 **********
+         if (RBTIBlack(uncle_itor)) {
+         /************* CASE 1 **********
+         * { black uncle, right itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *     parent-> R   B <-uncle
+         *             / \
+         *  brother-> B   R <-itor
+         *
+         *               ||
+         *  left rotate \||/ 
+         *               \/
+         *
+         *  grandparent-> B
+         *               / \
+         *       itor-> R   B <-uncle
+         *             / \
+         *   parent-> R    
+         *           /
+         *brother-> B
+         *
+         * { continue: itor => parent (case 2) }
+         ******************************/
+            if (BTIEqual(bt_itor, BTIRightChild(parent_bt_itor))) {
+                if (!RBTILeftRotate(parent_itor)) return false;
+                return RBTIInsertFixup(parent_itor);
+            }
+
+         /************* CASE 2 **********
          * { black uncle, left itor }
          *
          *  grandparent-> B 
@@ -115,30 +144,11 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          *
          * { fixup complete }
          ******************************/
-
-        /************* CASE 2 **********
-         * { black uncle, right itor }
-         *
-         *  grandparent-> B 
-         *               / \
-         *     parent-> R   B <-uncle
-         *             / \
-         *  brother-> B   R <-itor
-         *
-         *               ||
-         *  left rotate \||/ 
-         *               \/
-         *
-         *  grandparent-> B
-         *               / \
-         *       itor-> R   B <-uncle
-         *             / \
-         *   parent-> R    
-         *           /
-         *brother-> B
-         *
-         * { continue: itor => parent (case 1) }
-         ******************************/
+            if (!RBTIRightRotate(grandparent_itor)) return false;
+            if (!RBTISetColor(grandparent_itor, RBTNC_RED)) return false;
+            if (!RBTISetColor(parent_itor, RBTNC_BLACK)) return false;
+            return true;
+         }
 
         /************* CASE 3 **********
          * { red uncle, arbitary itor }
@@ -153,9 +163,9 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          * change color \||/ 
          *               \/
          *
-         *  grandparent-> R 
+         *  grandparent-> R~ 
          *               / \
-         *     parent-> B   B <-uncle
+         *     parent-> B~  B~ <-uncle
          *             / \
          *     itor-> R   B <-brother 
          *
@@ -171,14 +181,18 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          * change color \||/ 
          *               \/
          *
-         *  grandparent-> R 
+         *  grandparent-> R~
          *               / \
-         *     parent-> B   B <-uncle
+         *     parent-> B~  B~ <-uncle
          *             / \
          *  brother-> B   R <-itor 
          *
          * { continue: itor => grandparent }
          ******************************/
+         if (!RBTISetColor(grandparent_itor, RBTNC_RED)) return false;
+         if (!RBTISetColor(parent_itor, RBTNC_BLACK)) return false;
+         if (!RBTISetColor(uncle_itor, RBTNC_BLACK)) return false;
+         return RBTIInsertFixup(grandparent_itor);
     }
     // parent is a right child
     else {
@@ -190,7 +204,36 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          * bother and grandparent are both black
          ***********************************************/
 
+        if (RBTIBlack(uncle_itor)) {
         /************* CASE 1 **********
+         * { black uncle, left itor }
+         *
+         *  grandparent-> B 
+         *               / \
+         *      uncle-> B   R <-parent
+         *                 / \
+         *         itor-> R   B <-brother
+         *
+         *               ||
+         * right rotate \||/ 
+         *               \/
+         *
+         *  grandparent-> B
+         *               / \
+         *      uncle-> B   R <-itor
+         *                 / \
+         *                    R <-parent
+         *                     \
+         *                      B <-brother
+         *
+         * { continue: itor => parent (case 2) }
+         ******************************/
+            if (BTIEqual(bt_itor, BTILeftChild(parent_bt_itor))) {
+                if (!RBTIRightRotate(parent_itor)) return false;
+                return RBTIInsertFixup(parent_itor);
+            }
+
+        /************* CASE 2 **********
          * { black uncle, right itor }
          *
          *  grandparent-> B 
@@ -221,30 +264,11 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          *
          * { fixup complete }
          ******************************/
-
-        /************* CASE 2 **********
-         * { black uncle, left itor }
-         *
-         *  grandparent-> B 
-         *               / \
-         *      uncle-> B   R <-parent
-         *                 / \
-         *         itor-> R   B <-brother
-         *
-         *               ||
-         *  left rotate \||/ 
-         *               \/
-         *
-         *  grandparent-> B
-         *               / \
-         *      uncle-> B   R <-itor
-         *                 / \
-         *                    R <-parent
-         *                     \
-         *                      B <-brother
-         *
-         * { continue: itor => parent (case 1) }
-         ******************************/
+            if (!RBTILeftRotate(grandparent_itor)) return false;
+            if (!RBTISetColor(grandparent_itor, RBTNC_RED)) return false;
+            if (!RBTISetColor(parent_itor, RBTNC_BLACK)) return false;
+            return true;
+        }
 
         /************* CASE 3 **********
          * { red uncle, arbitary itor }
@@ -259,9 +283,9 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          * change color \||/ 
          *               \/
          *
-         *  grandparent-> R 
+         *  grandparent-> R~
          *               / \
-         *      uncle-> B   B <-parent
+         *      uncle-> B~  B~ <-parent
          *                 / \
          *      brother-> B   R <-itor
          *
@@ -277,20 +301,19 @@ RBTIInsertFixup(RedBlackTreeItor itor)
          * change color \||/ 
          *               \/
          *
-         *  grandparent-> R 
+         *  grandparent-> R~
          *               / \
-         *      uncle-> B   B <-parent
+         *      uncle-> B~  B~ <-parent
          *                 / \
          *         itor-> R   B <-brother
          *
          * { continue: itor => grandparent }
          ******************************/
+        if (!RBTISetColor(grandparent_itor, RBTNC_RED)) return false;
+        if (!RBTISetColor(parent_itor, RBTNC_BLACK)) return false;
+        if (!RBTISetColor(uncle_itor, RBTNC_BLACK)) return false;
+        return RBTIInsertFixup(grandparent_itor);
     }
-
-    // TODO
-    UNUSED(grandparent_itor);
-    UNUSED(uncle_itor);
-    return true;
 }
 
 bool 

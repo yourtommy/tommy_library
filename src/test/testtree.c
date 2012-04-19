@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define TRACE
+
 static const int TestMinArrayLen = 1;
 static const int TestMaxArrayLen = 1200;
 static const int TestMinValue = -58902;
@@ -19,6 +21,53 @@ static int *walked_array;
 static int walked_count;
 
 bool WalkBST(int value);
+
+void
+PrintTree(BinaryTree *treep, bool rbt) 
+{
+    if (BTEmpty(treep)) {
+        printf("{ empty tree }\n");
+        return;
+    }
+    BinaryTreeItor stack[4096];
+    int top = -1;
+    int depth = -1;
+    BinaryTreeItor itor = BTRoot(treep);
+    BinaryTreeItor prev = {0,0};
+    stack[++top] = itor;
+    while (top >= 0) {
+        itor = stack[top--];
+        if (BTINull(BTIParent(itor)) // root
+                || BTIEqual(itor, BTILeftChild(BTIParent(itor))) // left child
+                || BTIEqual(prev, BTIParent(itor))) // right child without a left brother
+            depth++;
+        else // jump from a left child to a right child of its ancestor
+            while (!BTIEqual(BTIParent(prev), BTIParent(itor))) {
+                depth--;
+                prev = BTIParent(prev);
+            }
+        int i;
+        for (i = 0; i < depth; i++)
+            printf("    |");
+        char *color = "";
+        if (rbt)
+        {
+            RedBlackTreeItor rbt_itor = {{itor}};
+            if (RBTIColor(rbt_itor) == RBTNC_RED)
+                color = "|R";
+            else 
+                color = "|B";
+        }
+            
+        printf("----{%d%s}\n", BTIValue(itor), color);
+
+        if (!BTINull(BTIRightChild(itor)))
+            stack[++top] = BTIRightChild(itor);
+        if (!BTINull(BTILeftChild(itor)))
+            stack[++top] = BTILeftChild(itor);
+        prev = itor;
+    }
+}
 
 bool VerifyBTINullLeftChild(BinaryTreeItor itor, const char *target)
 {
@@ -648,7 +697,6 @@ bool BuildPostorderTree(BinaryTreeItor itor, int begin, int end)
 
 bool TestBTWalk(BinaryTree *btp)
 {
-
     bool (*builders[])(BinaryTreeItor, int, int) = {
         &BuildPreorderTree,
         &BuildInorderTree,
@@ -1100,9 +1148,16 @@ bool TestRedBlackTree()
             return false;
         }
         // Test height
+        // h <= 2*log2(n+1)-1 (h starts from zero)
         int height = BTHeight(SUPER_PTR(SUPER_PTR(&rbt)));
-        if (height != (int)log2(i+1)) {
-            printf("Red Black Tree's height (%d) doesn't equal to floor(log2_%d) - (%d) after insert\n", height, i+1, (int)log2(i+1));
+        int n = i+1;
+        double up = 2*log2(n+1)-1;
+        if (height > up) {
+            printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%d) after insert\n", height, n, 2*(int)log2(i+1)-1);
+#ifdef TRACE
+            printf("Inserted: [%d] - (%d)", i, numbers[i]);
+            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+#endif
             return false;
         }
     }

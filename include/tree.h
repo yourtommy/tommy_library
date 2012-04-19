@@ -342,5 +342,11 @@ bool RBTILeftRotate(RedBlackTreeItor itor);
  **********************************/
 bool RBTIRightRotate(RedBlackTreeItor itor);
 
+/***********************************
+ * Don't use this API directly since
+ * They are exposed just for test.
+ **********************************/
+bool RBTIColor(RedBlackTreeItor itor);
+
 #endif
 
