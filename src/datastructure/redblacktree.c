@@ -13,6 +13,10 @@
 
 #define RBTI_PTR(itor)  ((struct RedBlackTreeNode *)(SUPER(SUPER(itor)).ptr))
 
+// defined in BinarySortTree
+bool BSTIDeleteInternal(BinarySortTreeItor itor, 
+        bool (*deleted_itor_handler)(BinarySortTreeItor deleted, BinarySortTreeItor child_of_deleted));
+
 static RedBlackTreeItor RBTNullItor = { 
     { 
         {NULL, NULL} 
@@ -316,6 +320,27 @@ RBTIInsertFixup(RedBlackTreeItor itor)
     }
 }
 
+static bool
+RBTDeleteFixup(RedBlackTreeItor itor)
+{
+    if (!RBTIBlack(itor)) {
+        RBTISetColor(itor, RBTNC_BLACK);
+        return true;
+    }
+
+    // TODO
+    return true;
+}
+
+static bool
+RBTDeleteCallback(BinarySortTreeItor deleted_itor, BinarySortTreeItor child_itor)
+{
+    if (!RBTIBlack(BSTI_TO_RBTI(deleted_itor))) // deleted is red, not need to fixup.
+        return true;
+
+    return RBTDeleteFixup(BSTI_TO_RBTI(child_itor));
+}
+
 bool 
 RBTInit(RedBlackTree *treep)
 {
@@ -363,7 +388,7 @@ RBTDeleteAll(RedBlackTree *treep)
 bool 
 RBTIDelete(RedBlackTreeItor itor)
 {
-    return BSTIDelete(SUPER(itor));
+    return BSTIDeleteInternal(SUPER(itor), &RBTDeleteCallback);
 }
 
 RedBlackTreeItor 

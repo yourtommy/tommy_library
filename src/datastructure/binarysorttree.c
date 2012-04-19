@@ -92,8 +92,10 @@ BSTInorderWalk(BinarySortTree *treep, TreeWalkerPtr walkerp)
     return BTInorderWalk(SUPER_PTR(treep), walkerp);
 }
 
-bool 
-BSTIDelete(BinarySortTreeItor itor)
+// child_itorp is the child of the deleted node. This is used by RBT.
+bool
+BSTIDeleteInternal(BinarySortTreeItor itor, 
+        bool (*deleted_itor_handler)(BinarySortTreeItor deleted, BinarySortTreeItor child_of_deleted))
 {
     if (BSTINull(itor))
         return false;
@@ -120,8 +122,19 @@ BSTIDelete(BinarySortTreeItor itor)
 
     if (!BTIEqual(SUPER(itor), SUPER(to_delete)))
         BTISetValue(SUPER(itor), BSTIValue(to_delete));
+
+    if (deleted_itor_handler != NULL
+        && !(*deleted_itor_handler)(to_delete, BTI_TO_BSTI(child_itor)))
+        return false; // The tree is broken after fixup falied! I can't rever it now.
+    
     free(SUPER(to_delete).ptr);
     return true;
+}
+
+bool 
+BSTIDelete(BinarySortTreeItor itor)
+{
+    return BSTIDeleteInternal(itor, NULL);
 }
 
 int 
