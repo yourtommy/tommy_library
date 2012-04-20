@@ -323,13 +323,286 @@ RBTIInsertFixup(RedBlackTreeItor itor)
 static bool
 RBTDeleteFixup(RedBlackTreeItor itor)
 {
+    // Just fill it in black if it's red
     if (!RBTIBlack(itor)) {
         RBTISetColor(itor, RBTNC_BLACK);
         return true;
     }
 
-    // TODO
-    return true;
+    // From this on itor is black.
+    // If itor is null it's also treated as black.
+
+    BinaryTreeItor bt_itor = SUPER(SUPER(itor));
+
+    // Just return if it's root
+    if (BTIEqual(bt_itor, BTRoot(bt_itor.tree_p)))
+        return true;
+    
+    if (BTIEqual(bt_itor, BTILeftChild(BTIParent(bt_itor)))) { // left child
+         /************* CASE 1 **********
+         * { black brother, 
+         *   black left nephew,
+         *   black right nephew }
+         *
+         *       parent-> x 
+         *               / \
+         *       itor-> B+  B <-brother
+         *                 / \
+         *   leftnephew-> B   B <-rightnephew
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *       parent-> x+~
+         *               / \
+         *       itor-> B~  R~ <-brother
+         *                 / \
+         *   leftnephew-> B   B <-rightnephew
+         *
+         * { continue: itor=>parent }
+         ********************************/
+
+         /************* CASE 2 **********
+         * { black brother, 
+         *   red left nephew,
+         *   black right nephew }
+         *
+         *       parent-> x 
+         *               / \
+         *       itor-> B+  B <-brother
+         *                 / \
+         *   leftnephew-> R   B <-rightnephew
+         *
+         *               ||
+         * right rotate \||/ 
+         *               \/
+         *
+         *       parent-> x 
+         *               / \
+         *       itor-> B+  R <-leftnephew
+         *                 / \
+         *                    B <-brother
+         *                   / \
+         *                      B <-rightnephew
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *       parent-> x 
+         *               / \
+         *       itor-> B+  B~ <-leftnephew
+         *                 / \
+         *                    R~ <-brother
+         *                   / \
+         *                      B <-rightnephew
+         *
+         * { continue: itor=>itor (case 3) }
+         *
+         ********************************/
+
+         /************* CASE 3 **********
+         * { black brother, 
+         *   arbitray left nephew,
+         *   red right nephew }
+         *
+         *       parent-> x 
+         *               / \
+         *       itor-> B+  B <-brother
+         *                 / \
+         *   leftnephew-> x   R <-rightnephew
+         *
+         *               ||
+         *  left rotate \||/ 
+         *               \/
+         *
+         *      brother-> B 
+         *               / \
+         *     parent-> x   R <-rightnephew
+         *             / \
+         *     itor-> B+  x <-leftnephew
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *      brother-> x~
+         *               / \
+         *     parent-> B~  B~ <-rightnephew
+         *             / \
+         *     itor-> B~  x <-leftnephew
+         *
+         * { fixup complete }
+         ********************************/
+
+         /************* CASE 4 **********
+         * { red brother, 
+         *   black left nephew,
+         *   black right nephew }
+         *
+         *       parent-> B 
+         *               / \
+         *       itor-> B+  R <-brother
+         *                 / \
+         *   leftnephew-> B   B <-rightnephew
+         *
+         *               ||
+         *  left rotate \||/ 
+         *               \/
+         *
+         *      brother-> R 
+         *               / \
+         *     parent-> B   B <-rightnephew
+         *             / \
+         *     itor-> B+  B <-leftnephew
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *      brother-> B~ 
+         *               / \
+         *     parent-> R~  B <-rightnephew
+         *             / \
+         *     itor-> B+  B <-leftnephew
+         *
+         * { continue: itor=>itor (case 1,2,3) }
+         ********************************/
+        return true;
+    } else {                                    // right child
+         /************* CASE 1 **********
+         * { black brother, 
+         *   black right nephew,
+         *   black left nephew }
+         *
+         *        parent-> x 
+         *                / \
+         *     brother-> B   B+ <-itor
+         *              / \
+         *leftnephew-> B   B <-rightnephew
+         *
+         *                ||
+         *  change color \||/ 
+         *                \/
+         *
+         *        parent-> x+~
+         *                / \
+         *     brother-> R~  B~ <-itor
+         *              / \
+         *leftnephew-> B   B <-rightnephew
+         *
+         * { continue: itor=>parent }
+         ********************************/
+
+         /************* CASE 2 **********
+         * { black brother, 
+         *   red right nephew,
+         *   black left nephew }
+         *
+         *        parent-> x 
+         *                / \
+         *     brother-> B   B+<-itor
+         *              / \
+         *leftnephew-> B   R <-rightnephew
+         *
+         *                ||
+         *   left rotate \||/ 
+         *                \/
+         *
+         *          parent-> x 
+         *                  / \
+         *   rightnephew-> R   B+ <-itor
+         *                / \
+         *     brother-> B 
+         *              / \
+         *leftnephew-> B 
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *          parent-> x 
+         *                  / \
+         *   rightnephew-> B~  B+ <-itor
+         *                / \
+         *     brother-> R~ 
+         *              / \
+         *leftnephew-> B 
+         *
+         * { continue: itor=>itor (case 3) }
+         *
+         ********************************/
+
+         /************* CASE 3 **********
+         * { black brother, 
+         *   arbitray right nephew,
+         *   red left nephew }
+         *
+         *        parent-> x 
+         *                / \
+         *     brother-> B   B+ <-itor
+         *              / \
+         *leftnephew-> R   x <-rightnephew
+         *
+         *               ||
+         * right rotate \||/ 
+         *               \/
+         *
+         *      brother-> B 
+         *               / \
+         * leftnephew-> R   x <-parent
+         *                 / \
+         *  rightnephew-> x   B+ <-itor
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *      brother-> x~ 
+         *               / \
+         * leftnephew-> B~  B~ <-parent
+         *                 / \
+         *  rightnephew-> x   B~ <-itor
+         *
+         * { fixup complete }
+         ********************************/
+
+         /************* CASE 4 **********
+         * { red brother, 
+         *   black right nephew,
+         *   black left nephew }
+         *
+         *        parent-> B 
+         *                / \
+         *     brother-> R   B+ <-itor
+         *              / \
+         *leftnephew-> B   B <-rightnephew
+         *
+         *               ||
+         * right rotate \||/ 
+         *               \/
+         *
+         *      brother-> R 
+         *               / \
+         * leftnephew-> B   B <-parent
+         *                 / \
+         *  rightnephew-> B   B+ <-itor
+         *
+         *               ||
+         * change color \||/ 
+         *               \/
+         *
+         *      brother-> B~ 
+         *               / \
+         * leftnephew-> B   R~ <-parent
+         *                 / \
+         *  rightnephew-> B   B+ <-itor
+         *
+         * { continue: itor=>itor (case 1,2,3) }
+         ********************************/
+        return true;
+    }
 }
 
 static bool

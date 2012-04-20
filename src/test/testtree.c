@@ -828,13 +828,13 @@ bool TestBinarySortTree()
             
     int unsorted = -1;
     if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
-        printf("Error: Tree's values are not sorted [%d] after inorder walk!!\n", unsorted);
+        printf("BST Error: Tree's values are not sorted [%d] after inorder walk!!\n", unsorted);
         return false;
     }
     
     int missing = -1;
     if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1) {
-        printf("Error: Element %d (index %d) is missing after inorder walk!!\n", numbers[missing], missing);
+        printf("BST Error: Element %d (index %d) is missing after inorder walk!!\n", numbers[missing], missing);
         return false;
     }
 
@@ -886,32 +886,33 @@ bool TestBinarySortTree()
     }
 
     // test delete
-    int k = 0;
-    BinarySortTreeItor itor = BSTSearch(&bst, numbers[k]);
-    if (!BSTIDelete(itor)) {
-        printf("BSTDelete failed\n");
-        return false;
-    }
-    walked_count = 0;
-    if (!BSTInorderWalk(&bst, &WalkBST)) {
-        printf("BSTInorderWalk failed after delete.\n");
-        return false;
-    }
-    if (walked_count != length-1) {
-        printf("The number of BST's values [%d] is different than length-1 [%d] after delete.\n", walked_count, length-1);
-        return false;
-    }
-            
-    unsorted = -1;
-    if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
-        printf("Error: Tree's values are not sorted [%d] after inorder walk after delete!!\n", unsorted);
-        return false;
-    }
-    
-    missing = -1;
-    if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[k]) {
-        printf("Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
-        return false;
+    for (i = 0; i < length; i++) {
+        BinarySortTreeItor itor = BSTSearch(&bst, numbers[i]);
+        if (!BSTIDelete(itor)) {
+            printf("BSTDelete failed\n");
+            return false;
+        }
+        walked_count = 0;
+        if (!BSTInorderWalk(&bst, &WalkBST)) {
+            printf("BSTInorderWalk failed after delete.\n");
+            return false;
+        }
+        if (walked_count != length-i-1) {
+            printf("The number of BST's values [%d] is different than length-1 [%d] after delete.\n", walked_count, length-i-1);
+            return false;
+        }
+                
+        unsorted = -1;
+        if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
+            printf("BST Error: Tree's values are not sorted [%d] after inorder walk after delete!!\n", unsorted);
+            return false;
+        }
+        
+        missing = -1;
+        if ((missing = FindMissingElement(numbers+i+1, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[i]) {
+            printf("BST Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
+            return false;
+        }
     }
 
     // test delete all
@@ -1148,12 +1149,12 @@ bool TestRedBlackTree()
             return false;
         }
         // Test height
-        // h <= 2*log2(n+1)-1 (h starts from zero)
+        // h <= 2*log2(ni+1)-1 (h starts from zero) ni is the number of internal nodes
         int height = BTHeight(SUPER_PTR(SUPER_PTR(&rbt)));
         int n = i+1;
-        double up = 2*log2(n+1)-1;
-        if (height > up) {
-            printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%d) after insert\n", height, n, 2*(int)log2(i+1)-1);
+        double up = 2*log2(n+1)-1; // ni < n
+        if (height >= up) {
+            printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%f) after insert\n", height, n, up);
 #ifdef TRACE
             printf("Inserted: [%d] - (%d)", i, numbers[i]);
             PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
@@ -1234,32 +1235,47 @@ bool TestRedBlackTree()
     }
 
     // test delete
-    int k = 0;
-    RedBlackTreeItor itor = RBTSearch(&rbt, numbers[k]);
-    if (!RBTIDelete(itor)) {
-        printf("RBTDelete failed\n");
-        return false;
-    }
-    walked_count = 0;
-    if (!RBTInorderWalk(&rbt, &WalkBST)) {
-        printf("RBTInorderWalk failed after delete.\n");
-        return false;
-    }
-    if (walked_count != length-1) {
-        printf("The number of RBT's values [%d] is different than length-1 [%d] after delete.\n", walked_count, length-1);
-        return false;
-    }
-            
-    unsorted = -1;
-    if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
-        printf("Error: Tree's values are not sorted [%d] after inorder walk after delete!!\n", unsorted);
-        return false;
-    }
-    
-    missing = -1;
-    if ((missing = FindMissingElement(numbers, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[k]) {
-        printf("Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
-        return false;
+    for (i = 0; i < length; i++) {
+        RedBlackTreeItor itor = RBTSearch(&rbt, numbers[i]);
+        if (!RBTIDelete(itor)) {
+            printf("RBTDelete failed\n");
+            return false;
+        }
+        walked_count = 0;
+        if (!RBTInorderWalk(&rbt, &WalkBST)) {
+            printf("RBTInorderWalk failed after delete.\n");
+            return false;
+        }
+        if (walked_count != length-i-1) {
+            printf("The number of RBT's values [%d] is different than length-1 [%d] after delete.\n", walked_count, length-i-1);
+            return false;
+        }
+                
+        unsorted = -1;
+        if ((unsorted = UnsortedIndex(walked_array, 0, walked_count) != -1)) {
+            printf("Error: Tree's values are not sorted [%d] after inorder walk after delete!!\n", unsorted);
+            return false;
+        }
+        
+        missing = -1;
+        if ((missing = FindMissingElement(numbers+i+1, walked_array, 0, walked_count)) != -1 && numbers[missing] != numbers[i]) {
+            printf("RBT Error: Element %d (index %d) is missing after inorder walk after delete!!\n", numbers[missing], missing);
+            return false;
+        }
+
+        // Test height
+        // h <= 2*log2(ni+1)-1 (h starts from zero) ni is the number of internal nodes
+        int height = BTHeight(SUPER_PTR(SUPER_PTR(&rbt)));
+        int n = length-i+1;
+        double up = 2*log2(n+1)-1; // ni < n
+        if (height >= up) {
+            printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%f) after insert\n", height, n, up);
+#ifdef TRACE
+            printf("Deleted: [%d] - (%d)", i, numbers[i]);
+            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+#endif
+            return false;
+        }
     }
 
     // test free
