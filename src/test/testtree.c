@@ -935,6 +935,65 @@ bool TestBinarySortTree()
     return true;
 }
 
+static bool 
+VerifyRedBlackTree(RedBlackTree *treep) {
+    int bh = -1; // black height
+    BinaryTree *btp = SUPER_PTR(SUPER_PTR(treep));
+    BinaryTreeItor bt_itor = BTRoot(btp);
+    BinaryTreeItor stack[4096];
+    int top = -1;
+
+    // preoder walk
+    while (true) {
+        while (!BTINull(bt_itor)) {
+            stack[++top] = bt_itor;
+            bt_itor = BTILeftChild(bt_itor);
+        }
+        
+        if (top < 0)
+            break;
+
+        bt_itor = stack[top--];
+        RedBlackTreeItor itor = (RedBlackTreeItor) {{ bt_itor }};
+        if (RBTIColor(itor) == RBTNC_RED) {
+            RedBlackTreeItor lc_itor = (RedBlackTreeItor) {{ BTILeftChild(bt_itor) }};
+            if (!RBTINull(lc_itor) && RBTIColor(lc_itor) == RBTNC_RED) {
+                printf("%d's left child is red!\n", RBTIValue(itor));
+                return false;
+            }
+            RedBlackTreeItor rc_itor = (RedBlackTreeItor) {{ BTIRightChild(bt_itor) }};
+            if (!RBTINull(rc_itor) && RBTIColor(rc_itor) == RBTNC_RED) {
+                printf("%d's right child is red!\n", RBTIValue(itor));
+                return false;
+            }
+        }
+
+        if (BTINull(BTILeftChild(bt_itor)) && BTINull(BTIRightChild(bt_itor))) { // leaf node
+            BinaryTreeItor bh_bt_itor = bt_itor;
+            int bdepth = -1;
+            while (!BTINull(bh_bt_itor)) {
+                if (RBTIColor((RedBlackTreeItor){{bh_bt_itor}}) == RBTNC_BLACK)
+                    bdepth++;
+                bh_bt_itor = BTIParent(bh_bt_itor);
+            }
+            if (bdepth < 0) {
+                printf("%d's black depth is minus", BTIValue(bt_itor));
+                return false;
+            }
+            if (bh < 0)
+                bh = bdepth;
+            else if (bh != bdepth) {
+                printf("%d's black depth is not the same as last black height\n", BTIValue(bt_itor));
+                return false;
+            }
+        }
+
+        bt_itor = BTIRightChild(bt_itor);
+    }
+
+    return true;
+}
+
 bool TestRedBlackTree()
 {
     int i;
@@ -1161,6 +1220,13 @@ bool TestRedBlackTree()
 #endif
             return false;
         }
+
+        // Test red-black property
+        if (!VerifyRedBlackTree(&rbt)) {
+            printf("Red Black Tree is illegal after insert.\n");
+            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+            return false;
+        }
     }
     
     // Test sort (inorder walk)
@@ -1274,6 +1340,13 @@ bool TestRedBlackTree()
             printf("Deleted: [%d] - (%d)", i, numbers[i]);
             PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
 #endif
+            return false;
+        }
+
+        // Test red-black property
+        if (!VerifyRedBlackTree(&rbt)) {
+            printf("Red Black Tree is illegal after insert.\n");
+            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
             return false;
         }
     }
