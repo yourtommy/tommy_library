@@ -1335,7 +1335,7 @@ bool TestRedBlackTree()
         int n = length-i+1;
         double up = 2*log2(n+1)-1; // ni < n
         if (height >= up) {
-            printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%f) after insert\n", height, n, up);
+            printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%f) after delete\n", height, n, up);
 #ifdef TRACE
             printf("Deleted: [%d] - (%d)", i, numbers[i]);
             PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
@@ -1345,7 +1345,7 @@ bool TestRedBlackTree()
 
         // Test red-black property
         if (!VerifyRedBlackTree(&rbt)) {
-            printf("Red Black Tree is illegal after insert.\n");
+            printf("Red Black Tree is illegal after delete.\n");
             PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
             return false;
         }

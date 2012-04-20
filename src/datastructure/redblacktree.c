@@ -321,7 +321,9 @@ RBTIInsertFixup(RedBlackTreeItor itor)
 }
 
 static bool
-RBTDeleteFixup(RedBlackTreeItor itor)
+// The second parent parameter is for the case when itor is null in
+// which itor's parent cannot be known.
+RBTIDeleteFixup(RedBlackTreeItor itor, RedBlackTreeItor parent_itor)
 {
     // Just fill it in black if it's red
     if (!RBTIBlack(itor)) {
@@ -332,14 +334,27 @@ RBTDeleteFixup(RedBlackTreeItor itor)
     // From this on itor is black.
     // If itor is null it's also treated as black.
 
-    BinaryTreeItor bt_itor = SUPER(SUPER(itor));
+    BinaryTreeItor parent_bt_itor = SUPER(SUPER(parent_itor));
 
     // Just return if it's root
-    if (BTIEqual(bt_itor, BTRoot(bt_itor.tree_p)))
+    if (BTINull(parent_bt_itor))
         return true;
-    
+
+    BinaryTreeItor bt_itor = SUPER(SUPER(itor));
+
     if (BTIEqual(bt_itor, BTILeftChild(BTIParent(bt_itor)))) { // left child
-         /************* CASE 1 **********
+        BinaryTreeItor brother_bt_itor = BTIRightChild(parent_bt_itor);
+        RedBlackTreeItor brother_itor = BTI_TO_RBTI(brother_bt_itor);
+
+        BinaryTreeItor left_nephew_bt_itor = BTINull(brother_bt_itor) ?
+            (BinaryTreeItor){0,0} : BTILeftChild(brother_bt_itor);
+        RedBlackTreeItor left_nephew_itor = BTI_TO_RBTI(left_nephew_bt_itor);
+
+        BinaryTreeItor right_nephew_bt_itor = BTINull(brother_bt_itor) ?
+            (BinaryTreeItor){0,0} : BTIRightChild(brother_bt_itor);
+        RedBlackTreeItor right_nephew_itor = BTI_TO_RBTI(right_nephew_bt_itor);
+
+        /************* CASE 1 **********
          * { black brother, 
          *   black left nephew,
          *   black right nephew }
@@ -362,8 +377,12 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          *
          * { continue: itor=>parent }
          ********************************/
+        if (RBTIBlack(brother_itor) && RBTIBlack(left_nephew_itor) && RBTIBlack(right_nephew_itor)) {
+            RBTISetColor(brother_itor, RBTNC_RED);
+            return RBTIDeleteFixup(parent_itor, BTI_TO_RBTI(BTIParent(parent_bt_itor)));
+        }
 
-         /************* CASE 2 **********
+        /************* CASE 2 **********
          * { black brother, 
          *   red left nephew,
          *   black right nephew }
@@ -401,6 +420,12 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          * { continue: itor=>itor (case 3) }
          *
          ********************************/
+        if (RBTIBlack(brother_itor) && !RBTIBlack(left_nephew_itor) && RBTIBlack(right_nephew_itor)) {
+            if (!RBTIRightRotate(brother_itor)) return false;
+            if (!RBTISetColor(left_nephew_itor, RBTNC_BLACK)) return false;
+            if (!RBTISetColor(brother_itor, RBTNC_RED)) return false;
+            return RBTIDeleteFixup(itor, parent_itor);
+        }
 
          /************* CASE 3 **********
          * { black brother, 
@@ -435,6 +460,13 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          *
          * { fixup complete }
          ********************************/
+        if (RBTIBlack(brother_itor) && !RBTIBlack(right_nephew_itor)) {
+            if (!RBTILeftRotate(parent_itor)) return false;
+            if (!RBTISetColor(brother_itor, RBTIColor(parent_itor))) return false;
+            if (!RBTISetColor(parent_itor, RBTNC_BLACK)) return false;
+            if (!RBTISetColor(right_nephew_itor, RBTNC_BLACK)) return false;
+            return true;
+        }
 
          /************* CASE 4 **********
          * { red brother, 
@@ -469,8 +501,24 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          *
          * { continue: itor=>itor (case 1,2,3) }
          ********************************/
-        return true;
+        if (!RBTIBlack(brother_itor)) {
+            if (!RBTILeftRotate(parent_itor)) return false;
+            if (!RBTISetColor(brother_itor, RBTNC_BLACK)) return false;
+            if (!RBTISetColor(parent_itor, RBTNC_RED)) return false;
+            return RBTIDeleteFixup(itor, parent_itor);
+        }
     } else {                                    // right child
+        BinaryTreeItor brother_bt_itor = BTILeftChild(parent_bt_itor);
+        RedBlackTreeItor brother_itor = BTI_TO_RBTI(brother_bt_itor);
+
+        BinaryTreeItor left_nephew_bt_itor = BTINull(brother_bt_itor) ?
+            (BinaryTreeItor){0,0} : BTILeftChild(brother_bt_itor);
+        RedBlackTreeItor left_nephew_itor = BTI_TO_RBTI(left_nephew_bt_itor);
+
+        BinaryTreeItor right_nephew_bt_itor = BTINull(brother_bt_itor) ?
+            (BinaryTreeItor){0,0} : BTIRightChild(brother_bt_itor);
+        RedBlackTreeItor right_nephew_itor = BTI_TO_RBTI(right_nephew_bt_itor);
+
          /************* CASE 1 **********
          * { black brother, 
          *   black right nephew,
@@ -494,6 +542,10 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          *
          * { continue: itor=>parent }
          ********************************/
+        if (RBTIBlack(brother_itor) && RBTIBlack(left_nephew_itor) && RBTIBlack(right_nephew_itor)) {
+            RBTISetColor(brother_itor, RBTNC_RED);
+            return RBTIDeleteFixup(parent_itor, BTI_TO_RBTI(BTIParent(parent_bt_itor)));
+        }
 
          /************* CASE 2 **********
          * { black brother, 
@@ -533,6 +585,12 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          * { continue: itor=>itor (case 3) }
          *
          ********************************/
+        if (RBTIBlack(brother_itor) && !RBTIBlack(right_nephew_itor) && RBTIBlack(left_nephew_itor)) {
+            if (!RBTILeftRotate(brother_itor)) return false;
+            if (!RBTISetColor(right_nephew_itor, RBTNC_BLACK)) return false;
+            if (!RBTISetColor(brother_itor, RBTNC_RED)) return false;
+            return RBTIDeleteFixup(itor, BTI_TO_RBTI(BTIParent(bt_itor)));
+        }
 
          /************* CASE 3 **********
          * { black brother, 
@@ -567,6 +625,13 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          *
          * { fixup complete }
          ********************************/
+        if (RBTIBlack(brother_itor) && !RBTIBlack(left_nephew_itor)) {
+            if (!RBTIRightRotate(parent_itor)) return false;
+            if (!RBTISetColor(brother_itor, RBTIColor(parent_itor))) return false;
+            if (!RBTISetColor(parent_itor, RBTNC_BLACK)) return false;
+            if (!RBTISetColor(left_nephew_itor, RBTNC_BLACK)) return false;
+            return true;
+        }
 
          /************* CASE 4 **********
          * { red brother, 
@@ -601,17 +666,29 @@ RBTDeleteFixup(RedBlackTreeItor itor)
          *
          * { continue: itor=>itor (case 1,2,3) }
          ********************************/
-        return true;
+        if (!RBTIBlack(brother_itor)) {
+            if (!RBTIRightRotate(parent_itor)) return false;
+            if (!RBTISetColor(brother_itor, RBTNC_BLACK)) return false;
+            if (!RBTISetColor(parent_itor, RBTNC_RED)) return false;
+            return RBTIDeleteFixup(itor, BTI_TO_RBTI(BTIParent(bt_itor)));
+        }
     }
+
+    // shouldn't fall in here
+    return false;
 }
 
 static bool
 RBTDeleteCallback(BinarySortTreeItor deleted_itor, BinarySortTreeItor child_itor)
 {
+    if (BTEmpty(SUPER(deleted_itor).tree_p))
+        return true;
+
     if (!RBTIBlack(BSTI_TO_RBTI(deleted_itor))) // deleted is red, not need to fixup.
         return true;
 
-    return RBTDeleteFixup(BSTI_TO_RBTI(child_itor));
+    return RBTIDeleteFixup(BSTI_TO_RBTI(child_itor),
+            BTI_TO_RBTI(BTIParent(SUPER(deleted_itor))));
 }
 
 bool 
