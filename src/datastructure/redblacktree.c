@@ -2,6 +2,7 @@
 #include "utility.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #define BSTI_TO_RBTI(bst_itor) \
     (RedBlackTreeItor) { \
@@ -342,9 +343,13 @@ RBTIDeleteFixup(RedBlackTreeItor itor, RedBlackTreeItor parent_itor)
 
     BinaryTreeItor bt_itor = SUPER(SUPER(itor));
 
-    if (BTIEqual(bt_itor, BTILeftChild(BTIParent(bt_itor)))) { // left child
+    if (BTIEqual(bt_itor, BTILeftChild(parent_bt_itor))) { // left child
         BinaryTreeItor brother_bt_itor = BTIRightChild(parent_bt_itor);
         RedBlackTreeItor brother_itor = BTI_TO_RBTI(brother_bt_itor);
+
+        // if itor has an extra black attribute, then its brother
+        // can't be null. Otherwise the tree cannot be balanced.
+        assert(!BTINull(brother_bt_itor));
 
         BinaryTreeItor left_nephew_bt_itor = BTINull(brother_bt_itor) ?
             (BinaryTreeItor){0,0} : BTILeftChild(brother_bt_itor);
@@ -511,6 +516,8 @@ RBTIDeleteFixup(RedBlackTreeItor itor, RedBlackTreeItor parent_itor)
         BinaryTreeItor brother_bt_itor = BTILeftChild(parent_bt_itor);
         RedBlackTreeItor brother_itor = BTI_TO_RBTI(brother_bt_itor);
 
+        assert(!BTINull(brother_bt_itor));
+
         BinaryTreeItor left_nephew_bt_itor = BTINull(brother_bt_itor) ?
             (BinaryTreeItor){0,0} : BTILeftChild(brother_bt_itor);
         RedBlackTreeItor left_nephew_itor = BTI_TO_RBTI(left_nephew_bt_itor);
@@ -589,7 +596,7 @@ RBTIDeleteFixup(RedBlackTreeItor itor, RedBlackTreeItor parent_itor)
             if (!RBTILeftRotate(brother_itor)) return false;
             if (!RBTISetColor(right_nephew_itor, RBTNC_BLACK)) return false;
             if (!RBTISetColor(brother_itor, RBTNC_RED)) return false;
-            return RBTIDeleteFixup(itor, BTI_TO_RBTI(BTIParent(bt_itor)));
+            return RBTIDeleteFixup(itor, parent_itor);
         }
 
          /************* CASE 3 **********
@@ -670,7 +677,7 @@ RBTIDeleteFixup(RedBlackTreeItor itor, RedBlackTreeItor parent_itor)
             if (!RBTIRightRotate(parent_itor)) return false;
             if (!RBTISetColor(brother_itor, RBTNC_BLACK)) return false;
             if (!RBTISetColor(parent_itor, RBTNC_RED)) return false;
-            return RBTIDeleteFixup(itor, BTI_TO_RBTI(BTIParent(bt_itor)));
+            return RBTIDeleteFixup(itor, parent_itor);
         }
     }
 

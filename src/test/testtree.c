@@ -23,8 +23,9 @@ static int walked_count;
 bool WalkBST(int value);
 
 void
-PrintTree(BinaryTree *treep, bool rbt) 
+PrintTree(char *out, BinaryTree *treep, bool rbt) 
 {
+    int pn = 0;
     if (BTEmpty(treep)) {
         printf("{ empty tree }\n");
         return;
@@ -48,7 +49,7 @@ PrintTree(BinaryTree *treep, bool rbt)
             }
         int i;
         for (i = 0; i < depth; i++)
-            printf("    |");
+            pn += sprintf(out+pn, "    |");
         char *color = "";
         if (rbt)
         {
@@ -59,7 +60,14 @@ PrintTree(BinaryTree *treep, bool rbt)
                 color = "|B";
         }
             
-        printf("----{%d%s}\n", BTIValue(itor), color);
+        char *position = "";
+        if (BTINull(BTIParent(itor)))
+            position = "root";
+        else if (BTIEqual(itor, BTILeftChild(BTIParent(itor))))
+            position = "l--/";
+        else
+            position = "r--\\";
+        pn += sprintf(out+pn, "%s{%d%s}\n", position, BTIValue(itor), color);
 
         if (!BTINull(BTIRightChild(itor)))
             stack[++top] = BTIRightChild(itor);
@@ -986,6 +994,15 @@ VerifyRedBlackTree(RedBlackTree *treep) {
                 printf("%d's black depth is not the same as last black height\n", BTIValue(bt_itor));
                 return false;
             }
+        } else if (BTINull(BTILeftChild(bt_itor)) || BTINull(BTIRightChild(bt_itor))) { // one-child node
+             BinaryTreeItor child = BTILeftChild(bt_itor);
+             if (BTINull(child))
+                 child = BTIRightChild(bt_itor);
+             if (RBTIColor((RedBlackTreeItor){{child}}) == RBTNC_BLACK
+                     || !BTINull(BTILeftChild(child)) || !BTINull(BTIRightChild(child))) {
+                 printf("%d has extra black attribute!\n", BTIValue(child));
+                 return false;
+             }
         }
 
         bt_itor = BTIRightChild(bt_itor);
@@ -1213,18 +1230,22 @@ bool TestRedBlackTree()
         int n = i+1;
         double up = 2*log2(n+1)-1; // ni < n
         if (height >= up) {
+            char treestr[1024*1024];
             printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%f) after insert\n", height, n, up);
 #ifdef TRACE
             printf("Inserted: [%d] - (%d)", i, numbers[i]);
-            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+            PrintTree(treestr, SUPER_PTR(SUPER_PTR(&rbt)), true);
+            printf("%s", treestr);
 #endif
             return false;
         }
 
         // Test red-black property
         if (!VerifyRedBlackTree(&rbt)) {
+            char treestr[1024*1024];
             printf("Red Black Tree is illegal after insert.\n");
-            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+            PrintTree(treestr, SUPER_PTR(SUPER_PTR(&rbt)), true);
+            printf("%s", treestr);
             return false;
         }
     }
@@ -1302,6 +1323,8 @@ bool TestRedBlackTree()
 
     // test delete
     for (i = 0; i < length; i++) {
+        char treestr_before[1024*1024];
+        PrintTree(treestr_before, SUPER_PTR(SUPER_PTR(&rbt)), true);
         RedBlackTreeItor itor = RBTSearch(&rbt, numbers[i]);
         if (!RBTIDelete(itor)) {
             printf("RBTDelete failed\n");
@@ -1335,18 +1358,26 @@ bool TestRedBlackTree()
         int n = length-i+1;
         double up = 2*log2(n+1)-1; // ni < n
         if (height >= up) {
+            char treestr[1024*1024];
             printf("Red Black Tree's height (%d) is bigger than [2log2_(%d+1)-1] - (%f) after delete\n", height, n, up);
 #ifdef TRACE
-            printf("Deleted: [%d] - (%d)", i, numbers[i]);
-            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+            printf("Before deleted:\n");
+            printf("%s\n", treestr_before);
+            printf("After Deleted: [%d] - (%d)", i, numbers[i]);
+            PrintTree(treestr, SUPER_PTR(SUPER_PTR(&rbt)), true);
+            printf("%s", treestr);
 #endif
             return false;
         }
 
         // Test red-black property
         if (!VerifyRedBlackTree(&rbt)) {
-            printf("Red Black Tree is illegal after delete.\n");
-            PrintTree(SUPER_PTR(SUPER_PTR(&rbt)), true);
+            char treestr[1024*1024];
+            printf("Red Black Tree is illegal after delete [%d] - (%d).\n", i, numbers[i]);
+            printf("Before deleted:\n");
+            printf("%s\n", treestr_before);
+            PrintTree(treestr, SUPER_PTR(SUPER_PTR(&rbt)), true);
+            printf("%s", treestr);
             return false;
         }
     }
