@@ -375,7 +375,7 @@ bool TestBTBothChildren(BinaryTree *btp)
 
     BTAddRoot(btp, numbers[0]); // Already tested
 
-    BinaryTreeItor *itor_queue = alloca(sizeof(BinaryTreeItor) * length);
+    BinaryTreeItor itor_queue[length];
     int qhead, qtail;
     qhead = qtail = 0; // When qhead equals to qtail the queue is empty
 
@@ -472,7 +472,7 @@ bool TestBTDeleteAll(BinaryTree *btp)
     }
 
    
-    BinaryTreeItor *itor_queue = alloca(sizeof(BinaryTreeItor) * length);
+    BinaryTreeItor itor_queue[length];
     int qhead, qtail;
     qhead = qtail = 0; // When qhead equals to qtail the queue is empty
 
@@ -724,7 +724,7 @@ bool TestBTWalk(BinaryTree *btp)
     };
     
     unsigned t;
-    walked_array = alloca(sizeof(int)*length);
+    walked_array = malloc(sizeof(int)*length);
     for (t = 0; t < sizeof(builders) / sizeof(builders[0]); t++) {
         if (!BTEmpty(btp)) {
             sprintf(error, "This test requires tree to be empty");
@@ -823,7 +823,7 @@ bool TestBinarySortTree()
     }
     
     // Test sort (inorder walk)
-    walked_array = alloca(sizeof(int) * length);
+    walked_array = malloc(sizeof(int) * length);
     walked_count = 0;
     if (!BSTInorderWalk(&bst, &WalkBST)) {
         printf("BSTInorderWalk failed.\n");
@@ -1251,7 +1251,7 @@ bool TestRedBlackTree()
     }
     
     // Test sort (inorder walk)
-    walked_array = alloca(sizeof(int) * length);
+    walked_array = malloc(sizeof(int) * length);
     walked_count = 0;
     if (!RBTInorderWalk(&rbt, &WalkBST)) {
         printf("RBTInorderWalk failed.\n");
@@ -1395,7 +1395,7 @@ bool TestRedBlackTree()
 void TestTree()
 {
     length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    numbers = alloca(sizeof(int)*length);
+    numbers = malloc(sizeof(int)*length);
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
     if (!TestBinaryTree() || !TestBinarySortTree() || !TestRedBlackTree()) {

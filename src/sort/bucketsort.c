@@ -1,6 +1,5 @@
 #include "sortprivate.h"
 #include "list.h"
-#include <stdlib.h>
 #include <assert.h>
 
 #ifdef TRACE
@@ -24,7 +23,7 @@ BucketSortArray(int *a, int begin, int end)
             max = a[i];
     }
 
-    List *bucket = alloca(sizeof(List) * len);
+    List bucket[len];
     for (i = 0; i < len; i++)
         ListInit(&bucket[i], LT_DLS);
     

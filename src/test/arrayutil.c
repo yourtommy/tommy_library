@@ -21,6 +21,18 @@ GenerateRandomArrayInt(int *array, unsigned int length, int min, int max)
 }
 
 void 
+ShuffleArrayInt(int *array, unsigned length)
+{
+    srand(time(0));
+    for (unsigned i = 0; i < length-1; i++) {
+        int swap = rand() % (length-i-1) + (i+1);
+        int temp = array[swap];
+        array[swap] = array[i];
+        array[i] = temp;
+    }
+}
+
+void 
 PrintArrayInt(char *title, int *array, unsigned int length)
 {
     unsigned int i;

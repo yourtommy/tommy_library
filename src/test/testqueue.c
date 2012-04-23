@@ -1,7 +1,6 @@
 #include "datastructure.h"
 #include "utilitytest.h"
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 static const int TestMinArrayLen = 80;
@@ -107,7 +106,7 @@ TestQueue()
     }
 
     unsigned length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    int *numbers = alloca(sizeof(int)*length);
+    int numbers[length];
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
     if (!TestEnqueue(&q, numbers, length, error)) {

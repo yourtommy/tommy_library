@@ -1,7 +1,6 @@
 #include "sort.h"
 #include "utilitytest.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -52,7 +51,7 @@ TestSortArray(void (*sortp)(int *, int, int),
         int *a, unsigned length, int begin, int end)
 {
     // Avoid the sorted result affecting the following tests.
-    int *numbers = alloca(sizeof(int)*length);
+    int numbers[length];
     memcpy(numbers, a, sizeof(int)*length);
 
 #ifdef TRACE
@@ -79,7 +78,7 @@ TestSortArray(void (*sortp)(int *, int, int),
 void
 TestSelectArray(int *a, int begin, int end)
 {
-    int *sorted = alloca(sizeof(int)*(end - begin));
+    int sorted[end - begin];
     memcpy(sorted, a+begin, sizeof(int)*(end-begin));
     QuickSortArray(sorted, 0, end-begin);
 
@@ -99,7 +98,7 @@ void
 TestSort(void)
 {
     unsigned length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    int *numbers = alloca(sizeof(int)*length);
+    int numbers[length];
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
     const int begin = 2;

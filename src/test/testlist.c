@@ -362,7 +362,7 @@ void TestListType(ListType type, const char* typename)
 void TestList()
 {
     length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    numbers = alloca(sizeof(int)*length);
+    numbers = malloc(sizeof(int)*length);
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
     TEST_LIST_TYPE(LT_DLS);

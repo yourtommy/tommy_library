@@ -7,4 +7,5 @@ TestDataStructure()
     TestQueue();
     TestList();
     TestTree();
+    TestHash();
 }

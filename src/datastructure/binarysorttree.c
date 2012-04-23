@@ -9,12 +9,7 @@
         .SUPER_MEMBER = bt_itor \
     }
 
-static BinarySortTreeItor BSTNullItor = { 
-    .SUPER_MEMBER = (BinaryTreeItor) {
-        .ptr = NULL,
-        .tree_p = NULL,
-    },
-};
+static BinarySortTreeItor BSTNullItor = { { NULL, NULL } };
 
 
 bool 

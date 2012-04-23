@@ -2,7 +2,6 @@
 #include "testset.h"
 #include "utilitytest.h"
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 static const int TestMinArrayLen = 80;
@@ -104,7 +103,7 @@ TestStack()
     }
 
     unsigned length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
-    int *numbers = alloca(sizeof(int)*length);
+    int numbers[length];
     GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
 
     if (!TestStackPush(&s, numbers, length, error)) {

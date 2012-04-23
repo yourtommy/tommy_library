@@ -120,7 +120,7 @@ ifndef DEBUG_SUFFIX
   $(call WarnVar,DEBUG_SUFFIX)
 endif
 
-CFLAGS+=-Wall -W -Werror#
+CFLAGS+=-Wall -W -Werror -std=c99#
 debug:CFLAGS+=-g#
 release:CFLAGS+=-O2#
 

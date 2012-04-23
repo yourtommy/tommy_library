@@ -1,6 +1,5 @@
 #include "sort.h"
 #include "utility.h"
-#include <stdlib.h>
 
 /*
  * mid belongs to the right part
@@ -9,14 +8,14 @@ void
 MergeArray(int *a, int begin, int mid, int end)
 {
     int leftn = mid - begin;
-    int *left = alloca((leftn+1)*sizeof(int));
+    int left[leftn+1];
     int i;
     for (i = 0; i < leftn; i++)
         left[i] = a[begin+i];
     left[leftn] = INFINITY_INT;
 
     int rightn = end - mid;
-    int *right = alloca((rightn+1)*sizeof(int));
+    int right[rightn+1];
     for (i = 0; i < rightn; i++)
         right[i] = a[mid+i];
     right[rightn] = INFINITY_INT;

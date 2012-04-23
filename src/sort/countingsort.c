@@ -1,6 +1,5 @@
 #include "sort.h"
 #include "sortprivate.h"
-#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
@@ -21,7 +20,7 @@ CountingSortArray(int *a, int begin, int end)
     CountingSortArrayWithConvert(a, begin, end, min, max, 0);
 }
 
-inline int
+static int
 NoConvert(int value)
 {
     return value;
@@ -36,11 +35,11 @@ CountingSortArrayWithConvert(int *a, int begin, int end,
         convert = &NoConvert;
 
     int countn = (max - min + 1); 
-    int *counta = alloca(sizeof(int) * countn);
+    int counta[countn];
     memset(counta, 0, sizeof(int) * countn);
 
     int len = end - begin;
-    int *copya = alloca(sizeof(int) * len);
+    int copya[len];
     memcpy(copya, a + begin, sizeof(int) * len);
 
     int i;

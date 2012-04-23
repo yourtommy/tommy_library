@@ -7,6 +7,7 @@ void TestStack();
 void TestQueue();
 void TestList();
 void TestTree();
+void TestHash();
 
 #endif
 
