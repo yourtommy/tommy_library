@@ -51,7 +51,7 @@ TestHash()
 
     Arguments TestCases[] = {
         { HT_DA, length_direct, invalid_ptr, numbers_direct, length_direct },
-        { HT_CA, capacity, /*TODO*/invalid_ptr, numbers, length },
+        { HT_CA, capacity, /*TODO*/NULL, numbers, length },
         { HT_OA, capacity, /*TODO*/invalid_ptr, numbers, length },
         { HT_PH, capacity, /*TODO*/invalid_ptr, numbers, length },
     };

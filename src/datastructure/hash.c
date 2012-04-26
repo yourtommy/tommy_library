@@ -10,8 +10,9 @@
 // Direct Addressing
 //====================
 static bool
-DAHashInit(Hash *hashp, unsigned capacity, ...)
+DAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
 {
+    UNUSED(a_list);
     hashp->impl = calloc(capacity, sizeof(int));
     memset(hashp->impl, 0xFF, capacity * sizeof(int));
     return true;
@@ -63,9 +64,10 @@ typedef struct CAHash
 } CAHash;
 
 static bool
-CAHashInit(Hash *hashp, unsigned capacity, ...)
+CAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
 {
     CAHash *cahashp = malloc(sizeof(CAHash) + capacity * sizeof(List));
+    cahashp->hashing_p = va_arg(a_list, CAHashingPtr);
     cahashp->slot_num = capacity;
     for (unsigned i = 0; i < capacity; i++)
         ListInit(&cahashp->slots[i], LT_DLS);
@@ -74,49 +76,73 @@ CAHashInit(Hash *hashp, unsigned capacity, ...)
 }
 
 static bool 
-CAHashInsert(Hash *hashp, int value)
+CAHashSearch(Hash *hashp, int value)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(value);
+    CAHash *cahashp = hashp->impl;
+    if (cahashp == NULL || cahashp->hashing_p == NULL)
+        return false;
+    int hashed = cahashp->hashing_p(value);
+    ListItor itor =  ListHead(&cahashp->slots[hashed]);
+    while (!ListItorNull(itor)) {
+        if (ListValue(itor) == value)
+            return true;
+        itor = ListItorNext(itor);
+    }
     return false;
 }
 
 static bool 
-CAHashSearch(Hash *hashp, int value)
+CAHashInsert(Hash *hashp, int value)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(value);
-    return false;
+    CAHash *cahashp = hashp->impl;
+    if (cahashp == NULL || cahashp->hashing_p == NULL)
+        return false;
+    if (CAHashSearch(hashp, value))
+        return false;
+    int hashed = cahashp->hashing_p(value);
+    return ListPrepend(&cahashp->slots[hashed], value);
 }
 
 static bool 
 CAHashDelete(Hash *hashp, int value)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(value);
+    CAHash *cahashp = hashp->impl;
+    if (cahashp == NULL || cahashp->hashing_p == NULL)
+        return false;
+    if (!CAHashSearch(hashp, value))
+        return false;
+
+    int hashed = cahashp->hashing_p(value);
+    ListItor itor =  ListHead(&cahashp->slots[hashed]);
+
+    while (!ListItorNull(itor)) {
+        if (ListValue(itor) == value) {
+            ListDelete(itor);
+            return true;
+        }
+        itor = ListItorNext(itor);
+    }
     return false;
 }
 
 static bool 
 CAHashFree(Hash *hashp)
 {
-    // TODO
-    UNUSED(hashp);
-    return false;
+    free(hashp->impl);
+    hashp->impl = NULL;
+    return true;
 }
 
 //====================
 // Open Addressing
 //====================
 static bool
-OAHashInit(Hash *hashp, unsigned capacity, ...)
+OAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
 {
     // TODO
     UNUSED(hashp);
     UNUSED(capacity);
+    UNUSED(a_list);
     return false;
 }
 
@@ -160,7 +186,7 @@ OAHashFree(Hash *hashp)
 //===================
 typedef struct HashOperation
 {
-    bool (*init_ptr)(Hash *hashp, unsigned capacity, ...);
+    bool (*init_ptr)(Hash *hashp, unsigned capacity, va_list a_list);
     bool (*insert_ptr)(Hash *hashp, int value);
     bool (*search_ptr)(Hash *hashp, int value);
     bool (*delete_ptr)(Hash *hashp, int value);
@@ -174,8 +200,9 @@ static HashOperation hash_operations[] = {
 };
 
 #define VerifyType(type, operation) \
-    (type < sizeof(hash_operations) / sizeof(hash_operations[0]) \
-        && *((void **)&hash_operations[type] + offsetof(HashOperation, operation)) != NULL) \
+    (type < (sizeof(hash_operations) / sizeof(hash_operations[0])) \
+         && *((unsigned char *)&hash_operations[type] + \
+                offsetof(HashOperation, operation)) != 0) \
 
 //====================
 // General 
