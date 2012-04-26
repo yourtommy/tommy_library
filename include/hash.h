@@ -5,7 +5,7 @@
 
 typedef enum HashType
 {
-    HT_DA, // Direct Addressing
+    HT_DA = 0, // Direct Addressing
     HT_CA, // Closed Addressing
     HT_OA, // Open Addressing
     HT_PH, // Perfect Hashing
@@ -15,7 +15,11 @@ typedef struct Hash
 {
     HashType type;
     unsigned capacity;
+    void *impl;
 } Hash;
+
+typedef int (*DAHashingPtr)(int value);
+typedef int (*CAHashingPtr)(int value, int times);
 
 /***********************************
  * Initialize the hash.

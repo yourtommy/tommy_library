@@ -73,34 +73,41 @@ TestHash()
         for (int j = 0; j < TestCases[i].values_length; j++)
             if (!HashInsert(&h, TestCases[i].values[j])) {
                 printf("HashInsert falied for type: %s\n", HashTypeString(TestCases[i].type));
-                succeeded = false;
-                continue;
+                b = succeeded = false;
+                break;
             }
+        if (!b)
+            continue;
         for (int j = 0; j < TestCases[i].values_length; j++)
             if (!HashSearch(&h, TestCases[i].values[j])) {
                 printf("Cannot find [%d] after inserting for type: %s\n", j, HashTypeString(TestCases[i].type));
-                succeeded = false;
-                continue;
+                b = succeeded = false;
+                break;
             }
+        if (!b)
+            continue;
         for (int j = 0; j < TestCases[i].values_length; j++) {
             if (!HashDelete(&h, TestCases[i].values[j])) {
                 printf("HashDelete falied for type: %s\n", HashTypeString(TestCases[i].type));
-                succeeded = false;
-                continue;
+                b = succeeded = false;
+                break;
             }
             if (HashSearch(&h, TestCases[i].values[j])) {
                 printf("Can find [%d] after deleting for type: %s\n", j, HashTypeString(TestCases[i].type));
-                return;
+                b = succeeded = false;
+                break;
             }
         }
+        if (!b)
+            continue;
         if (!HashFree(&h)) {
             printf("HashFree failed for type: %s\n", HashTypeString(TestCases[i].type));
-            succeeded = false;
+            b = succeeded = false;
             continue;
         }
     }
 
     if (succeeded)
-        printf("Test hash succeeded!!");
+        printf("Test hash succeeded!!\n");
 }
 

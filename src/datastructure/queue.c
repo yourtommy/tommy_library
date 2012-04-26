@@ -2,7 +2,7 @@
 
 #define QUEUE_MAX_ARRAY_SIZE    (QUEUE_MAX_CAPACITY+1)
 
-inline int IncreaseIndex(int i)
+inline static int IncreaseIndex(int i)
 {
     if (i == QUEUE_MAX_ARRAY_SIZE - 1)
         return 0;
