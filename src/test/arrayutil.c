@@ -32,6 +32,20 @@ ShuffleArrayInt(int *array, unsigned length)
     }
 }
 
+void
+GenerateUniqueRandomArrayInt(int *array, unsigned int length, int min, int max)
+{
+    srand(time(0));
+    int im = 0;
+    for (int in = min; in <= max; in++) {
+        int rn = max - in + 1;
+        int rm = length - im;
+        if (rand() % rn < rm) // Probability is rn/rm
+            array[im++] = in;
+    }
+    ShuffleArrayInt(array, length);
+}
+
 void 
 PrintArrayInt(char *title, int *array, unsigned int length)
 {

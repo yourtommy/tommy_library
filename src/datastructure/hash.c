@@ -6,6 +6,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+//===================
+// Hashing
+//==================
+int
+CAModHashing(int value, int capacity)
+{
+    int ret = value % capacity;
+    if (ret < 0)
+        ret += capacity;
+    return ret;
+}
+
 //====================
 // Direct Addressing
 //====================
@@ -67,10 +79,15 @@ static bool
 CAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
 {
     CAHash *cahashp = malloc(sizeof(CAHash) + capacity * sizeof(List));
+    
     cahashp->hashing_p = va_arg(a_list, CAHashingPtr);
+    if (cahashp->hashing_p == NULL)
+        cahashp->hashing_p = &CAModHashing;
+
     cahashp->slot_num = capacity;
     for (unsigned i = 0; i < capacity; i++)
         ListInit(&cahashp->slots[i], LT_DLS);
+
     hashp->impl = cahashp;
     return true;
 }
@@ -81,7 +98,7 @@ CAHashSearch(Hash *hashp, int value)
     CAHash *cahashp = hashp->impl;
     if (cahashp == NULL || cahashp->hashing_p == NULL)
         return false;
-    int hashed = cahashp->hashing_p(value);
+    int hashed = cahashp->hashing_p(value, cahashp->slot_num);
     ListItor itor =  ListHead(&cahashp->slots[hashed]);
     while (!ListItorNull(itor)) {
         if (ListValue(itor) == value)
@@ -99,7 +116,8 @@ CAHashInsert(Hash *hashp, int value)
         return false;
     if (CAHashSearch(hashp, value))
         return false;
-    int hashed = cahashp->hashing_p(value);
+
+    int hashed = cahashp->hashing_p(value, cahashp->slot_num);
     return ListPrepend(&cahashp->slots[hashed], value);
 }
 
@@ -112,7 +130,7 @@ CAHashDelete(Hash *hashp, int value)
     if (!CAHashSearch(hashp, value))
         return false;
 
-    int hashed = cahashp->hashing_p(value);
+    int hashed = cahashp->hashing_p(value, cahashp->slot_num);
     ListItor itor =  ListHead(&cahashp->slots[hashed]);
 
     while (!ListItorNull(itor)) {
@@ -201,8 +219,8 @@ static HashOperation hash_operations[] = {
 
 #define VerifyType(type, operation) \
     (type < (sizeof(hash_operations) / sizeof(hash_operations[0])) \
-         && *((unsigned char *)&hash_operations[type] + \
-                offsetof(HashOperation, operation)) != 0) \
+         && *((void**)((unsigned char *)&hash_operations[type] + \
+                offsetof(HashOperation, operation))) != NULL) 
 
 //====================
 // General 

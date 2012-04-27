@@ -18,8 +18,10 @@ typedef struct Hash
     void *impl;
 } Hash;
 
-typedef int (*CAHashingPtr)(int value);
-typedef int (*OAHashingPtr)(int value, int times);
+typedef int (*CAHashingPtr)(int value, int capacity);
+typedef int (*OAHashingPtr)(int value, int capacity, int times);
+
+int CAModHashing(int value, int capacity);
 
 /***********************************
  * Initialize the hash.

@@ -40,7 +40,7 @@ TestHash()
 {
     const unsigned int length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
     int numbers[length];
-    GenerateRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
+    GenerateUniqueRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
     const int capacity = length / 3;
 
     const int length_direct = 100;
@@ -51,12 +51,12 @@ TestHash()
 
     Arguments TestCases[] = {
         { HT_DA, length_direct, invalid_ptr, numbers_direct, length_direct },
-        { HT_CA, capacity, /*TODO*/NULL, numbers, length },
+        { HT_CA, capacity, NULL, numbers, length },
         { HT_OA, capacity, /*TODO*/invalid_ptr, numbers, length },
         { HT_PH, capacity, /*TODO*/invalid_ptr, numbers, length },
     };
 
-    bool succeeded = false;
+    bool succeeded = true;
 
     for (unsigned i = 0; i < sizeof(TestCases) / sizeof(TestCases[0]); i++) {
         Hash h;
@@ -70,23 +70,33 @@ TestHash()
             succeeded = false;
             continue;
         }
-        for (int j = 0; j < TestCases[i].values_length; j++)
+        for (int j = 0; j < TestCases[i].values_length; j++) {
+            if (HashSearch(&h, TestCases[i].values[j])) {
+                printf("Found [%d] before inserting for type: %s\n", j, HashTypeString(TestCases[i].type));
+                b = succeeded = false;
+                break;
+            }
             if (!HashInsert(&h, TestCases[i].values[j])) {
                 printf("HashInsert falied for type: %s\n", HashTypeString(TestCases[i].type));
                 b = succeeded = false;
                 break;
             }
-        if (!b)
-            continue;
-        for (int j = 0; j < TestCases[i].values_length; j++)
             if (!HashSearch(&h, TestCases[i].values[j])) {
                 printf("Cannot find [%d] after inserting for type: %s\n", j, HashTypeString(TestCases[i].type));
                 b = succeeded = false;
                 break;
             }
+        }
+        if (!b)
+            continue;
         if (!b)
             continue;
         for (int j = 0; j < TestCases[i].values_length; j++) {
+            if (!HashSearch(&h, TestCases[i].values[j])) {
+                printf("Cannot find [%d] before deleting for type: %s\n", j, HashTypeString(TestCases[i].type));
+                b = succeeded = false;
+                break;
+            }
             if (!HashDelete(&h, TestCases[i].values[j])) {
                 printf("HashDelete falied for type: %s\n", HashTypeString(TestCases[i].type));
                 b = succeeded = false;
@@ -109,5 +119,7 @@ TestHash()
 
     if (succeeded)
         printf("Test hash succeeded!!\n");
+    else
+        PrintArrayInt("Hash Test failed", numbers, length);
 }
 
