@@ -40,7 +40,7 @@ HashTypeString(HashType type)
 void
 TestHash()
 {
-    const unsigned int length = 9872;//GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
+    const unsigned int length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
     int numbers[length];
     GenerateUniqueRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
     const int capacity = length / 3;

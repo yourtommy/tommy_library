@@ -6,28 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef int (*CAHashingPtr)(int value, int capacity);
-typedef int (*OAHashingPtr)(int value, int capacity, int times);
-
-//===================
-// Hashing
-//==================
-static int
-CAModHashing(int value, int capacity)
-{
-    int ret = value % capacity;
-    if (ret < 0)
-        ret += capacity;
-    return ret;
-}
-
-/*TODO static*/ int
-CAMultHashing(int value, int capacity)
-{
-    static const int s = 33252323;
-    int i = capacity * s;
-    return i / value;
-}
+typedef int (*CAHashingPtr)(int value, unsigned slot_num);
+typedef int (*OAHashingPtr)(int value, unsigned slot_num, int times);
 
 //====================
 // Direct Addressing
@@ -86,23 +66,55 @@ typedef struct CAHash
     List slots[];
 } CAHash;
 
-static bool
-CAHashInit(Hash *hashp, unsigned capacity/*, va_list a_list*/)
+static int
+CAModHashing(int value, unsigned slot_num)
 {
-    CAHash *cahashp = malloc(sizeof(CAHash) + capacity * sizeof(List));
-    
-    /*
-    cahashp->hashing_p = va_arg(a_list, CAHashingPtr);
-    if (cahashp->hashing_p == NULL)
-    */
-        cahashp->hashing_p = &CAModHashing;
+    int ret = value % slot_num;
+    if (ret < 0)
+        ret += slot_num;
+    return ret;
+}
 
-    cahashp->slot_num = capacity;
-    for (unsigned i = 0; i < capacity; i++)
+static int
+CAMultHashing(int value, unsigned slot_num)
+{
+    if (value < 0)
+        value = -value;
+    int p = 0;
+    while (slot_num >> p != 0) 
+        p++;
+    static const unsigned int s = 2654435769;
+    unsigned decimal = s * value;
+    int hashed = decimal >> (sizeof(int) - p);
+    return hashed;
+}
+
+static bool
+CAHashInit(Hash *hashp, unsigned slot_num, CAHashingPtr hashingp)
+{
+    CAHash *cahashp = malloc(sizeof(CAHash) + slot_num  * sizeof(List));
+    cahashp->hashing_p = hashingp;
+    cahashp->slot_num = slot_num;
+    for (unsigned i = 0; i < cahashp->slot_num; i++)
         ListInit(&cahashp->slots[i], LT_DLS);
-
     hashp->impl = cahashp;
     return true;
+}
+static bool
+CAModHashInit(Hash *hashp, unsigned capacity)
+{
+    return CAHashInit(hashp, capacity, &CAModHashing);
+}
+
+static bool
+CAMultHashInit(Hash *hashp, unsigned capacity/*, va_list a_list*/)
+{
+    static const unsigned len[] = { 1, 2, 4, 8, 16, 32, 64, 128 };
+    unsigned i = 0;
+    while (i < sizeof(len) / sizeof(len[0]) && capacity > len[i])
+        i++;
+    unsigned slot_num = 1 << i; // 2^i
+    return CAHashInit(hashp, slot_num, &CAMultHashing);
 }
 
 static bool 
@@ -226,8 +238,8 @@ typedef struct HashOperation
 
 static HashOperation hash_operations[] = {
     [HT_DA] = { &DAHashInit, &DAHashInsert, &DAHashSearch, &DAHashDelete, &DAHashFree },
-    [HT_CA_MOD] = { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
-    [HT_CA_MULT] = /* TODO */ { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
+    [HT_CA_MOD] = { &CAModHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
+    [HT_CA_MULT] = { &CAMultHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
     [HT_OA] = { &OAHashInit, &OAHashInsert, &OAHashSearch, &OAHashDelete, &OAHashFree },
 };
 
