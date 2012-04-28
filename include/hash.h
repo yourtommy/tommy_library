@@ -6,7 +6,8 @@
 typedef enum HashType
 {
     HT_DA = 0, // Direct Addressing
-    HT_CA, // Closed Addressing
+    HT_CA_MOD, // Closed Addressing Mod hashing
+    HT_CA_MULT, // Closed Addressing Multiply hashing
     HT_OA, // Open Addressing
     HT_PH, // Perfect Hashing
 } HashType;
@@ -18,28 +19,19 @@ typedef struct Hash
     void *impl;
 } Hash;
 
-typedef int (*CAHashingPtr)(int value, int capacity);
-typedef int (*OAHashingPtr)(int value, int capacity, int times);
-
-int CAModHashing(int value, int capacity);
-
 /***********************************
  * Initialize the hash.
  *
  * Direct Addressing: the valid value should in the range
  * of [0, capacity).
  *
- * Closed Addressing: the forth optional argument is the
- * used hashing funciton whose prototype is
- * "int (*func)(int value)".
+ * Closed Addressing: 
  *
- * Open Addressing: the forth optional argument is the 
- * used hashing function whose prototype is
- * "int (*hash_func)(int value, int times);
+ * Open Addressing: 
  *
  * Perfect Hashing:
  ***********************************/
-bool HashInit(Hash *hashp, HashType type, unsigned capacity, ...);
+bool HashInit(Hash *hashp, HashType type, unsigned capacity/*, ...*/);
 
 /***************************
  * Insert a value.

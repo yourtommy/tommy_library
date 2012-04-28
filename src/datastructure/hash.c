@@ -6,10 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef int (*CAHashingPtr)(int value, int capacity);
+typedef int (*OAHashingPtr)(int value, int capacity, int times);
+
 //===================
 // Hashing
 //==================
-int
+static int
 CAModHashing(int value, int capacity)
 {
     int ret = value % capacity;
@@ -18,13 +21,21 @@ CAModHashing(int value, int capacity)
     return ret;
 }
 
+/*TODO static*/ int
+CAMultHashing(int value, int capacity)
+{
+    static const int s = 33252323;
+    int i = capacity * s;
+    return i / value;
+}
+
 //====================
 // Direct Addressing
 //====================
 static bool
-DAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
+DAHashInit(Hash *hashp, unsigned capacity/*, va_list a_list*/)
 {
-    UNUSED(a_list);
+    /* UNUSED(a_list); */
     hashp->impl = calloc(capacity, sizeof(int));
     memset(hashp->impl, 0xFF, capacity * sizeof(int));
     return true;
@@ -76,12 +87,14 @@ typedef struct CAHash
 } CAHash;
 
 static bool
-CAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
+CAHashInit(Hash *hashp, unsigned capacity/*, va_list a_list*/)
 {
     CAHash *cahashp = malloc(sizeof(CAHash) + capacity * sizeof(List));
     
+    /*
     cahashp->hashing_p = va_arg(a_list, CAHashingPtr);
     if (cahashp->hashing_p == NULL)
+    */
         cahashp->hashing_p = &CAModHashing;
 
     cahashp->slot_num = capacity;
@@ -155,12 +168,12 @@ CAHashFree(Hash *hashp)
 // Open Addressing
 //====================
 static bool
-OAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
+OAHashInit(Hash *hashp, unsigned capacity/*, va_list a_list*/)
 {
     // TODO
     UNUSED(hashp);
     UNUSED(capacity);
-    UNUSED(a_list);
+    /* UNUSED(a_list); */
     return false;
 }
 
@@ -204,7 +217,7 @@ OAHashFree(Hash *hashp)
 //===================
 typedef struct HashOperation
 {
-    bool (*init_ptr)(Hash *hashp, unsigned capacity, va_list a_list);
+    bool (*init_ptr)(Hash *hashp, unsigned capacity/*, va_list a_list*/);
     bool (*insert_ptr)(Hash *hashp, int value);
     bool (*search_ptr)(Hash *hashp, int value);
     bool (*delete_ptr)(Hash *hashp, int value);
@@ -213,7 +226,8 @@ typedef struct HashOperation
 
 static HashOperation hash_operations[] = {
     [HT_DA] = { &DAHashInit, &DAHashInsert, &DAHashSearch, &DAHashDelete, &DAHashFree },
-    [HT_CA] = { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
+    [HT_CA_MOD] = { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
+    [HT_CA_MULT] = /* TODO */ { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
     [HT_OA] = { &OAHashInit, &OAHashInsert, &OAHashSearch, &OAHashDelete, &OAHashFree },
 };
 
@@ -226,15 +240,18 @@ static HashOperation hash_operations[] = {
 // General 
 //====================
 bool 
-HashInit(Hash *hashp, HashType type, unsigned capacity, ...)
+HashInit(Hash *hashp, HashType type, unsigned capacity/*, ...*/)
 {
     if (hashp == NULL || !VerifyType(type, init_ptr))
         return false;
     hashp->type = type;
+    /*
     va_list a_list;
     va_start(a_list, capacity);
     bool ret = hash_operations[type].init_ptr(hashp, capacity, a_list);
     va_end(a_list);
+    */
+    bool ret = hash_operations[type].init_ptr(hashp, capacity);
     return ret;
 }
 

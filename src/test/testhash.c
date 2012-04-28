@@ -13,7 +13,7 @@ typedef struct Arguments
 {
     HashType type;
     unsigned capacity;
-    void *hashing_func;
+    /* void *hashing_func; */
     int *values;
     int values_length;
 } Arguments;
@@ -24,8 +24,10 @@ HashTypeString(HashType type)
     switch (type) {
         case HT_DA:
             return "Direct Addressing";
-        case HT_CA:
-            return "Closed Addressing";
+        case HT_CA_MOD:
+            return "Closed Addressing (Mod Hashing)";
+        case HT_CA_MULT:
+            return "Closed Addressing (Multiply Hashing)";
         case HT_OA: 
             return "Open Addressing";
         case HT_PH: 
@@ -38,7 +40,7 @@ HashTypeString(HashType type)
 void
 TestHash()
 {
-    const unsigned int length = GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
+    const unsigned int length = 9872;//GenerateRandomArrayLength(TestMinArrayLen, TestMaxArrayLen);
     int numbers[length];
     GenerateUniqueRandomArrayInt(numbers, length, TestMinValue, TestMaxValue);
     const int capacity = length / 3;
@@ -50,10 +52,11 @@ TestHash()
     ShuffleArrayInt(numbers_direct, length_direct);
 
     Arguments TestCases[] = {
-        { HT_DA, length_direct, invalid_ptr, numbers_direct, length_direct },
-        { HT_CA, capacity, NULL, numbers, length },
-        { HT_OA, capacity, /*TODO*/invalid_ptr, numbers, length },
-        { HT_PH, capacity, /*TODO*/invalid_ptr, numbers, length },
+        { HT_DA, length_direct, /* invalid_ptr ,*/ numbers_direct, length_direct },
+        { HT_CA_MOD, capacity, /* NULL ,*/ numbers, length },
+        { HT_CA_MULT, capacity, /* NULL ,*/ numbers, length },
+        { HT_OA, capacity, /*TODO invalid_ptr,*/ numbers, length },
+        { HT_PH, capacity, /*TODO invalid_ptr,*/ numbers, length },
     };
 
     bool succeeded = true;
@@ -61,9 +64,11 @@ TestHash()
     for (unsigned i = 0; i < sizeof(TestCases) / sizeof(TestCases[0]); i++) {
         Hash h;
         bool b;
+        /* 
         if (TestCases[i].hashing_func != invalid_ptr)
             b = HashInit(&h, TestCases[i].type, TestCases[i].capacity, TestCases[i].hashing_func);
         else
+        */
             b = HashInit(&h, TestCases[i].type, TestCases[i].capacity);
         if (!b) {
             printf("HashInit failed for type: %s\n", HashTypeString(TestCases[i].type));
