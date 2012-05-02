@@ -41,6 +41,10 @@ TestRoundRightShift()
 static bool
 TestMaxPrimeNum()
 {
+    // TODO remove this simple test case
+    for (int i = 2; i <= 12; i++)
+        printf("%d's max prime: %d\n", i, MaxPrimeNum(i));
+
     static const int primes[] = {
           2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
          31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
@@ -1043,7 +1047,7 @@ TestMaxPrimeNum()
          104549, 104551, 104561, 104579, 104593, 104597, 104623, 104639, 104651, 104659,
          104677, 104681, 104683, 104693, 104701, 104707, 104711, 104717, 104723, 104729,
     };
-    static const int primes_length = sizeof(primes) / sizeof(primes[0]);
+    static const unsigned primes_length = sizeof(primes) / sizeof(primes[0]);
 
     const int max_value = primes[primes_length-1];
     const int min_value = 2;

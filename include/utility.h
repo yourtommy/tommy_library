@@ -1,5 +1,6 @@
 #ifndef UTILITY_H__
 #define UTILITY_H__
+#include <stdbool.h>
 
 #define INFINITY_INT    ((int)(~(unsigned int)0 >> 1))
 
@@ -10,9 +11,9 @@
 
 #define UNUSED(p) (void)(p)
 
-int MaxPrimeNum(int n);
+unsigned MaxPrimeNum(unsigned n);
 
-inline unsigned int
+static inline unsigned int
 RoundRightShift(unsigned n, unsigned bits)
 {
     return (n >> bits) | (n << (sizeof(int) * 8 - bits));
