@@ -5,6 +5,40 @@
 #include <stdbool.h>
 
 static bool
+TestRoundRightShift()
+{
+    // 32 bits int
+    unsigned cases[][3] = {
+        { 0x00000000, 1,  0x00000000, },
+        { 0x00000000, 16, 0x00000000, },
+        { 0x00000000, 31, 0x00000000, },
+        { 0x00000000, 32, 0x00000000, },
+        { 0x00000001, 1,  0x80000000, },
+        { 0x00000001, 16, 0x00010000, },
+        { 0x00000001, 31, 0x00000002, },
+        { 0x00000001, 32, 0x00000001, },
+        { 0x00010001, 1,  0x80008000, },
+        { 0x00010001, 16, 0x00010001, },
+        { 0x00010001, 31, 0x00020002, },
+        { 0x00010001, 32, 0x00010001, },
+        { 0x000fffff, 1,  0x8007ffff, },
+        { 0x000fffff, 16, 0xffff000f, },
+        { 0x000fffff, 31, 0x001ffffe, },
+        { 0x000fffff, 32, 0x000fffff, },
+    };
+
+    for (unsigned i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        unsigned result = RoundRightShift(cases[i][0], cases[i][1]);
+        if (result != cases[i][2]) {
+            printf("0x%x ~>> %d 's result is 0x%x, but 0x%x is expected\n", cases[i][0], cases[i][1], result, cases[i][2]);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool
 TestMaxPrimeNum()
 {
     static const int primes[] = {
@@ -1038,8 +1072,10 @@ TestMaxPrimeNum()
 
 void TestUtility()
 {
-    if (!TestMaxPrimeNum())
-        printf("Test Max PrimeNum failed");
+    if (!TestRoundRightShift())
+        printf("Test Round Right Shift failed\n");
+    else if(!TestMaxPrimeNum())
+        printf("Test Max PrimeNum failed\n");
     else
         printf("Test Utility successful\n");
 }

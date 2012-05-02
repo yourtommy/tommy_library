@@ -12,4 +12,10 @@
 
 int MaxPrimeNum(int n);
 
+inline unsigned int
+RoundRightShift(unsigned n, unsigned bits)
+{
+    return (n >> bits) | (n << (sizeof(int) * 8 - bits));
+}
+
 #endif
