@@ -20,3 +20,4 @@ RoundRightShift(unsigned n, unsigned bits)
 }
 
 #endif
+

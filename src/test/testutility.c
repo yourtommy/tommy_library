@@ -41,10 +41,6 @@ TestRoundRightShift()
 static bool
 TestMaxPrimeNum()
 {
-    // TODO remove this simple test case
-    for (int i = 2; i <= 12; i++)
-        printf("%d's max prime: %d\n", i, MaxPrimeNum(i));
-
     static const int primes[] = {
           2, 3, 5, 7, 11, 13, 17, 19, 23, 29,
          31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
@@ -1069,7 +1065,7 @@ TestMaxPrimeNum()
         if (got != expected) {
             printf("%d's expected prime num is %d, but got %d\n", num, expected, got);
             return false;
-        }
+        } 
     }
     return true;
 };
@@ -1081,5 +1077,5 @@ void TestUtility()
     else if(!TestMaxPrimeNum())
         printf("Test Max PrimeNum failed\n");
     else
-        printf("Test Utility successful\n");
+        printf("Test Utility successful!!\n");
 }
