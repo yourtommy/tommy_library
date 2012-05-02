@@ -1,4 +1,4 @@
-SUBSYS=sort datastructure test
+SUBSYS=utility sort datastructure test
 
 define \n
 

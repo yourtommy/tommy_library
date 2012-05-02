@@ -10,4 +10,6 @@
 
 #define UNUSED(p) (void)(p)
 
+int MaxPrimeNum(int n);
+
 #endif
