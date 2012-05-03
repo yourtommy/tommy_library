@@ -69,9 +69,10 @@ typedef struct CAHash
 static int
 CAModHashing(int value, unsigned slot_num)
 {
-    int ret = value % slot_num;
+    unsigned divisor = MaxPrimeNum(slot_num);
+    int ret = value % divisor;
     if (ret < 0)
-        ret += slot_num;
+        ret += divisor;
     return ret;
 }
 
