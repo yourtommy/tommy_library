@@ -19,10 +19,13 @@ typedef struct Hash
 } Hash;
 
 typedef int (*CAHashingPtr)(int value, unsigned slot_num);
-typedef int (*OAHashingPtr)(int value, unsigned slot_num, int times);
 
-int CAModHashing(int value, unsigned slot_num);
-int CAMultHashing(int value, unsigned slot_num);
+/* Times starts from 0 */
+typedef int (*OAHashingPtr)(int value, unsigned slot_num, unsigned times);
+
+int CAHashingMod(int value, unsigned slot_num);
+int CAHashingMult(int value, unsigned slot_num);
+int OAHashingLinearProbing(int value, unsigned slot_num, unsigned times);
 
 /***********************************
  * Initialize the hash.
@@ -42,16 +45,21 @@ bool HashInit(Hash *hashp, HashType type, unsigned capacity, ...);
 
 /***************************
  * Insert a value.
+ * Return false if value already
+ * exists.
  ***************************/
 bool HashInsert(Hash *hashp, int value);
 
 /***************************
  * Search a value.
+ * Return true if found.
  ***************************/
 bool HashSearch(Hash *hashp, int value);
 
 /***************************
  * Delete a vlaue.
+ * Return false if value doesn't
+ * exist.
  ***************************/
 bool HashDelete(Hash *hashp, int value);
 

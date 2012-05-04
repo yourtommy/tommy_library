@@ -7,7 +7,7 @@ static const int TestMaxArrayLen = 1200;
 static const int TestMinValue = -58902;
 static const int TestMaxValue = 58292;
 
-static void *const invalid_ptr = (void *)-1;
+static void *const invalid_ptr = NULL; 
 
 typedef struct Arguments
 {
@@ -51,9 +51,9 @@ TestHash()
 
     Arguments TestCases[] = {
         { HT_DA, length_direct, invalid_ptr, numbers_direct, length_direct },
-        { HT_CA, capacity, &CAModHashing, numbers, length },
-        { HT_CA, capacity, &CAMultHashing, numbers, length },
-        { HT_OA, capacity, invalid_ptr, numbers, length },
+        { HT_CA, capacity, &CAHashingMod, numbers, length },
+        { HT_CA, capacity, &CAHashingMult, numbers, length },
+        { HT_OA, length/*TODO: capacity*/, &OAHashingLinearProbing, numbers, length },
         { HT_PH, capacity, invalid_ptr, numbers, length },
     };
 

@@ -6,6 +6,45 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DELETED_INT	(-INFINITY_INT)
+
+//====================
+// Hashing functions
+//====================
+int
+CAHashingMod(int value, unsigned slot_num)
+{
+    int ret = value % slot_num;
+    if (ret < 0)
+        ret += slot_num;
+    return ret;
+}
+
+int
+CAHashingMult(int value, unsigned slot_num)
+{
+    if (value < 0)
+        value = -value;
+    int p = 0;
+    while (slot_num >> p != 0) 
+        p++;
+    static const unsigned int s = 2654435769;
+    unsigned decimal = s * value;
+    int hashed = decimal >> (sizeof(int) - p);
+    return hashed;
+}
+
+int
+OAHashingLinearProbing(int value, unsigned slot_num, unsigned times)
+{
+    if (times >= slot_num)
+	return -1; // overflow
+    unsigned index = CAHashingMod(value, slot_num);
+    index += times;
+    if (index >= slot_num)
+	index -= slot_num;
+    return index;
+}
 
 //====================
 // Direct Addressing
@@ -15,7 +54,8 @@ DAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
 {
     UNUSED(a_list);
     hashp->impl = calloc(capacity, sizeof(int));
-    memset(hashp->impl, 0xFF, capacity * sizeof(int));
+    for (unsigned i = 0; i < capacity; i++)
+	*((int *)hashp->impl + i) = INFINITY_INT;
     return true;
 }
 
@@ -23,7 +63,7 @@ static bool
 DAHashInsert(Hash *hashp, int value)
 {
     int *a = hashp->impl;
-    if (a[value] != ~0)
+    if (a[value] != INFINITY_INT)
         return false;
     a[value] = value;
     return true;
@@ -33,16 +73,16 @@ static bool
 DAHashSearch(Hash *hashp, int value)
 {
     int *a = hashp->impl;
-    return a[value] != ~0;
+    return a[value] != INFINITY_INT;
 }
 
 static bool 
 DAHashDelete(Hash *hashp, int value)
 {
     int *a = hashp->impl;
-    if (a[value] == ~0)
+    if (a[value] == INFINITY_INT)
         return false;
-    a[value] = ~0;
+    a[value] = INFINITY_INT;
     return true;
 }
 
@@ -64,35 +104,11 @@ typedef struct CAHash
     List slots[];
 } CAHash;
 
-int
-CAModHashing(int value, unsigned slot_num)
-{
-    int ret = value % slot_num;
-    if (ret < 0)
-        ret += slot_num;
-    return ret;
-}
-
-int
-CAMultHashing(int value, unsigned slot_num)
-{
-    if (value < 0)
-        value = -value;
-    int p = 0;
-    while (slot_num >> p != 0) 
-        p++;
-    static const unsigned int s = 2654435769;
-    unsigned decimal = s * value;
-    int hashed = decimal >> (sizeof(int) - p);
-    return hashed;
-}
-
 static bool
 CAHashInit(Hash *hashp, unsigned slot_num, va_list a_list)
 {
-    CAHashingPtr hashingp = va_arg(a_list, CAHashingPtr);
     CAHash *cahashp = malloc(sizeof(CAHash) + slot_num  * sizeof(List));
-    cahashp->hashing_p = hashingp;
+    cahashp->hashing_p = va_arg(a_list, CAHashingPtr);
     cahashp->slot_num = slot_num;
     for (unsigned i = 0; i < cahashp->slot_num; i++)
         ListInit(&cahashp->slots[i], LT_DLS);
@@ -162,49 +178,81 @@ CAHashFree(Hash *hashp)
 //====================
 // Open Addressing
 //====================
+typedef struct OAHash
+{
+    OAHashingPtr hashing_p;
+    unsigned slot_num;
+    int slots[];
+} OAHash;
+
 static bool
 OAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(capacity);
-    UNUSED(a_list);
-    return false;
+    OAHash *oahashp = calloc(capacity, sizeof(OAHash));
+    oahashp->slot_num = capacity;
+    oahashp->hashing_p = va_arg(a_list, OAHashingPtr);
+    for (unsigned i = 0; i < capacity; i++)
+	oahashp->slots[i] = INFINITY_INT;
+    hashp->impl = oahashp;
+    return true;
 }
 
 static bool 
 OAHashInsert(Hash *hashp, int value)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(value);
+    OAHash *oahashp = (OAHash *)hashp->impl;
+    int times = 0;
+    int index;
+    while ((index = oahashp->hashing_p(value, oahashp->slot_num, times++)) != -1) {
+	if (oahashp->slots[index] == value)
+	    return false;
+	if (oahashp->slots[index] == INFINITY_INT || 
+		oahashp->slots[index] == DELETED_INT) {
+	    oahashp->slots[index] = value;
+	    return true;
+	}
+    }
     return false;
 }
 
 static bool 
 OAHashSearch(Hash *hashp, int value)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(value);
+    OAHash *oahashp = (OAHash *)hashp->impl;
+    int times = 0;
+    int index;
+    while ((index = oahashp->hashing_p(value, oahashp->slot_num, times++)) != -1) {
+	if (oahashp->slots[index] == INFINITY_INT)
+	    return false;
+	if (oahashp->slots[index] == value)
+	    return true;
+    }
     return false;
 }
 
 static bool 
 OAHashDelete(Hash *hashp, int value)
 {
-    // TODO
-    UNUSED(hashp);
-    UNUSED(value);
+    OAHash *oahashp = (OAHash *)hashp->impl;
+    int times = 0;
+    int index;
+    while ((index = oahashp->hashing_p(value, oahashp->slot_num, times++)) != -1) {
+	if (oahashp->slots[index] == INFINITY_INT) 
+	    return false;
+	if (oahashp->slots[index] == value) {
+	    oahashp->slots[index] = DELETED_INT;
+	    return true;
+	}
+    }
     return false;
 }
 
 static bool 
 OAHashFree(Hash *hashp)
 {
-    // TODO
-    UNUSED(hashp);
-    return false;
+    free(hashp->impl);
+    hashp->impl = NULL;
+    return true;
 }
 
 //===================
