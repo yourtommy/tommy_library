@@ -14,7 +14,8 @@ typedef enum HashType
 typedef struct Hash
 {
     HashType type;
-    unsigned capacity;
+    unsigned slot_num;
+    unsigned ele_num;
     void *impl;
 } Hash;
 
@@ -31,7 +32,7 @@ int OAHashingLinearProbing(int value, unsigned slot_num, unsigned times);
  * Initialize the hash.
  *
  * Direct Addressing: the valid value should in the range
- * of [0, capacity).
+ * of [0, slot_num).
  *
  * Closed Addressing: the 3rd argument is a pointer of type
  * CAModHashing.
@@ -41,7 +42,7 @@ int OAHashingLinearProbing(int value, unsigned slot_num, unsigned times);
  *
  * Perfect Hashing:
  ***********************************/
-bool HashInit(Hash *hashp, HashType type, unsigned capacity, ...);
+bool HashInit(Hash *hashp, HashType type, unsigned slot_num, ...);
 
 /***************************
  * Insert a value.

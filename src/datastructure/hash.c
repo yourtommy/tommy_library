@@ -50,11 +50,11 @@ OAHashingLinearProbing(int value, unsigned slot_num, unsigned times)
 // Direct Addressing
 //====================
 static bool
-DAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
+DAHashInit(Hash *hashp, va_list a_list)
 {
     UNUSED(a_list);
-    hashp->impl = calloc(capacity, sizeof(int));
-    for (unsigned i = 0; i < capacity; i++)
+    hashp->impl = calloc(hashp->slot_num, sizeof(int));
+    for (unsigned i = 0; i < hashp->slot_num; i++)
 	*((int *)hashp->impl + i) = INFINITY_INT;
     return true;
 }
@@ -100,17 +100,15 @@ DAHashFree(Hash *hashp)
 typedef struct CAHash
 {
     CAHashingPtr hashing_p;
-    unsigned slot_num;
     List slots[];
 } CAHash;
 
 static bool
-CAHashInit(Hash *hashp, unsigned slot_num, va_list a_list)
+CAHashInit(Hash *hashp, va_list a_list)
 {
-    CAHash *cahashp = malloc(sizeof(CAHash) + slot_num  * sizeof(List));
+    CAHash *cahashp = malloc(sizeof(CAHash) + hashp->slot_num  * sizeof(List));
     cahashp->hashing_p = va_arg(a_list, CAHashingPtr);
-    cahashp->slot_num = slot_num;
-    for (unsigned i = 0; i < cahashp->slot_num; i++)
+    for (unsigned i = 0; i < hashp->slot_num; i++)
         ListInit(&cahashp->slots[i], LT_DLS);
     hashp->impl = cahashp;
     return true;
@@ -122,7 +120,7 @@ CAHashSearch(Hash *hashp, int value)
     CAHash *cahashp = hashp->impl;
     if (cahashp == NULL || cahashp->hashing_p == NULL)
         return false;
-    int hashed = cahashp->hashing_p(value, cahashp->slot_num);
+    int hashed = cahashp->hashing_p(value, hashp->slot_num);
     ListItor itor =  ListHead(&cahashp->slots[hashed]);
     while (!ListItorNull(itor)) {
         if (ListValue(itor) == value)
@@ -141,7 +139,7 @@ CAHashInsert(Hash *hashp, int value)
     if (CAHashSearch(hashp, value))
         return false;
 
-    int hashed = cahashp->hashing_p(value, cahashp->slot_num);
+    int hashed = cahashp->hashing_p(value, hashp->slot_num);
     return ListPrepend(&cahashp->slots[hashed], value);
 }
 
@@ -154,7 +152,7 @@ CAHashDelete(Hash *hashp, int value)
     if (!CAHashSearch(hashp, value))
         return false;
 
-    int hashed = cahashp->hashing_p(value, cahashp->slot_num);
+    int hashed = cahashp->hashing_p(value, hashp->slot_num);
     ListItor itor =  ListHead(&cahashp->slots[hashed]);
 
     while (!ListItorNull(itor)) {
@@ -175,23 +173,42 @@ CAHashFree(Hash *hashp)
     return true;
 }
 
+static bool
+CAHashRehash(Hash *hashp)
+{
+    CAHash *cahashp = hashp->impl;
+    Hash new_hash;
+    HashInit(&new_hash, hashp->type, hashp->slot_num * 2, cahashp->hashing_p);
+    new_hash.ele_num = hashp->ele_num;
+    for (unsigned i = 0; i < hashp->slot_num; i++) {
+	List list = cahashp->slots[i];
+	ListItor itor = ListHead(&list);
+	while (!ListItorNull(itor)) {
+	    CAHashInsert(&new_hash, ListValue(itor));
+	    itor = ListItorNext(itor);
+	}
+    }
+
+    HashFree(hashp);
+    *hashp = new_hash;
+    return true;
+}
+
 //====================
 // Open Addressing
 //====================
 typedef struct OAHash
 {
     OAHashingPtr hashing_p;
-    unsigned slot_num;
     int slots[];
 } OAHash;
 
 static bool
-OAHashInit(Hash *hashp, unsigned capacity, va_list a_list)
+OAHashInit(Hash *hashp, va_list a_list)
 {
-    OAHash *oahashp = calloc(capacity, sizeof(OAHash));
-    oahashp->slot_num = capacity;
+    OAHash *oahashp = malloc(sizeof(OAHash) + hashp->slot_num * sizeof(int));
     oahashp->hashing_p = va_arg(a_list, OAHashingPtr);
-    for (unsigned i = 0; i < capacity; i++)
+    for (unsigned i = 0; i < hashp->slot_num; i++)
 	oahashp->slots[i] = INFINITY_INT;
     hashp->impl = oahashp;
     return true;
@@ -203,7 +220,7 @@ OAHashInsert(Hash *hashp, int value)
     OAHash *oahashp = (OAHash *)hashp->impl;
     int times = 0;
     int index;
-    while ((index = oahashp->hashing_p(value, oahashp->slot_num, times++)) != -1) {
+    while ((index = oahashp->hashing_p(value, hashp->slot_num, times++)) != -1) {
 	if (oahashp->slots[index] == value)
 	    return false;
 	if (oahashp->slots[index] == INFINITY_INT || 
@@ -221,7 +238,7 @@ OAHashSearch(Hash *hashp, int value)
     OAHash *oahashp = (OAHash *)hashp->impl;
     int times = 0;
     int index;
-    while ((index = oahashp->hashing_p(value, oahashp->slot_num, times++)) != -1) {
+    while ((index = oahashp->hashing_p(value, hashp->slot_num, times++)) != -1) {
 	if (oahashp->slots[index] == INFINITY_INT)
 	    return false;
 	if (oahashp->slots[index] == value)
@@ -236,7 +253,7 @@ OAHashDelete(Hash *hashp, int value)
     OAHash *oahashp = (OAHash *)hashp->impl;
     int times = 0;
     int index;
-    while ((index = oahashp->hashing_p(value, oahashp->slot_num, times++)) != -1) {
+    while ((index = oahashp->hashing_p(value, hashp->slot_num, times++)) != -1) {
 	if (oahashp->slots[index] == INFINITY_INT) 
 	    return false;
 	if (oahashp->slots[index] == value) {
@@ -255,22 +272,42 @@ OAHashFree(Hash *hashp)
     return true;
 }
 
+static bool
+OAHashRehash(Hash *hashp)
+{
+    OAHash *oahashp = hashp->impl;
+    Hash new_hash;
+    HashInit(&new_hash, hashp->type, hashp->slot_num * 2, oahashp->hashing_p);
+    new_hash.ele_num = hashp->ele_num;
+    for (unsigned i = 0; i < hashp->slot_num; i++) {
+	int value = oahashp->slots[i];
+	if (value != INFINITY_INT && value != DELETED_INT
+	    && !OAHashInsert(&new_hash, value))
+		return false;
+    }
+
+    HashFree(hashp);
+    *hashp = new_hash;
+    return true;
+}
+
 //===================
 // Operation table
 //===================
 typedef struct HashOperation
 {
-    bool (*init_ptr)(Hash *hashp, unsigned capacity, va_list a_list);
+    bool (*init_ptr)(Hash *hashp, va_list a_list);
     bool (*insert_ptr)(Hash *hashp, int value);
     bool (*search_ptr)(Hash *hashp, int value);
     bool (*delete_ptr)(Hash *hashp, int value);
     bool (*free_ptr)(Hash *hashp);
+    bool (*rehash_ptr)(Hash *hashp);
 } HashOperation;
 
 static HashOperation hash_operations[] = {
-    [HT_DA] = { &DAHashInit, &DAHashInsert, &DAHashSearch, &DAHashDelete, &DAHashFree },
-    [HT_CA] = { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree },
-    [HT_OA] = { &OAHashInit, &OAHashInsert, &OAHashSearch, &OAHashDelete, &OAHashFree },
+    [HT_DA] = { &DAHashInit, &DAHashInsert, &DAHashSearch, &DAHashDelete, &DAHashFree, NULL },
+    [HT_CA] = { &CAHashInit, &CAHashInsert, &CAHashSearch, &CAHashDelete, &CAHashFree, &CAHashRehash },
+    [HT_OA] = { &OAHashInit, &OAHashInsert, &OAHashSearch, &OAHashDelete, &OAHashFree, &OAHashRehash },
 };
 
 #define VerifyType(type, operation) \
@@ -281,15 +318,28 @@ static HashOperation hash_operations[] = {
 //====================
 // General 
 //====================
+static bool
+HashReHash(Hash *hashp)
+{
+    if (hashp == NULL)
+	return false;
+    // Don't need rehash.
+    if (hash_operations[hashp->type].rehash_ptr == NULL)
+	return true;
+    return hash_operations[hashp->type].rehash_ptr(hashp);
+}
+
 bool 
-HashInit(Hash *hashp, HashType type, unsigned capacity, ...)
+HashInit(Hash *hashp, HashType type, unsigned slot_num, ...)
 {
     if (hashp == NULL || !VerifyType(type, init_ptr))
         return false;
     hashp->type = type;
+    hashp->ele_num = 0;
+    hashp->slot_num = slot_num;
     va_list a_list;
-    va_start(a_list, capacity);
-    bool ret = hash_operations[type].init_ptr(hashp, capacity, a_list);
+    va_start(a_list, slot_num);
+    bool ret = hash_operations[type].init_ptr(hashp, a_list);
     va_end(a_list);
     return ret;
 }
@@ -299,26 +349,43 @@ HashInsert(Hash *hashp, int value)
 {
     if (hashp == NULL || !VerifyType(hashp->type, insert_ptr))
         return false;
-    return hash_operations[hashp->type].insert_ptr(hashp, value);
+    if (hashp->ele_num >= hashp->slot_num * 0.75
+	    && !HashReHash(hashp))
+	return false;
+    if (!hash_operations[hashp->type].insert_ptr(hashp, value))
+	return false;
+    ++hashp->ele_num;
+    return true;
 }
 
-bool HashSearch(Hash *hashp, int value)
+bool
+HashSearch(Hash *hashp, int value)
 {
     if (hashp == NULL || !VerifyType(hashp->type, search_ptr))
         return false;
     return hash_operations[hashp->type].search_ptr(hashp, value);
 }
 
-bool HashDelete(Hash *hashp, int value)
+bool
+HashDelete(Hash *hashp, int value)
 {
     if (hashp == NULL || !VerifyType(hashp->type, delete_ptr))
         return false;
-    return hash_operations[hashp->type].delete_ptr(hashp, value);
+    if (!hash_operations[hashp->type].delete_ptr(hashp, value))
+	return false;
+    --hashp->ele_num;
+    return true;
 }
 
-bool HashFree(Hash *hashp)
+bool 
+HashFree(Hash *hashp)
 {
     if (hashp == NULL || !VerifyType(hashp->type, free_ptr))
         return false;
-    return hash_operations[hashp->type].free_ptr(hashp);
+    if (!hash_operations[hashp->type].free_ptr(hashp))
+	return false;
+    hashp->ele_num = 0;
+    hashp->slot_num = 0;
+    return true;
 }
+

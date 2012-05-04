@@ -1402,4 +1402,5 @@ void TestTree()
         printf("Test tree falied - length: %d, MinValue: %d, MaxValue: %d\n", length, TestMinValue, TestMaxValue);
         PrintArrayInt("numbers", numbers, length);
     }
+    printf("\n");
 }
