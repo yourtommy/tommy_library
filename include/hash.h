@@ -27,6 +27,7 @@ typedef int (*OAHashingPtr)(int value, unsigned slot_num, unsigned times);
 int CAHashingMod(int value, unsigned slot_num);
 int CAHashingMult(int value, unsigned slot_num);
 int OAHashingLinearProbing(int value, unsigned slot_num, unsigned times);
+int OAHashingQuadraticProbing(int value, unsigned slot_num, unsigned times);
 
 /***********************************
  * Initialize the hash.

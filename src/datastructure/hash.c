@@ -47,6 +47,18 @@ OAHashingLinearProbing(int value, unsigned slot_num, unsigned times)
     return index;
 }
 
+int
+OAHashingQuadraticProbing(int value, unsigned slot_num, unsigned times)
+{
+    if (times >= slot_num)
+	return -1;
+    unsigned index = CAHashingMod(value, slot_num);
+    index += times * times;
+    index %= slot_num;
+
+    return index;
+}
+
 //====================
 // Direct Addressing
 //====================

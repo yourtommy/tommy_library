@@ -54,6 +54,7 @@ TestHash()
         { HT_CA, slot_num, &CAHashingMod, numbers, length },
         { HT_CA, slot_num, &CAHashingMult, numbers, length },
         { HT_OA, slot_num, &OAHashingLinearProbing, numbers, length },
+        { HT_OA, slot_num, &OAHashingQuadraticProbing, numbers, length },
         { HT_PH, slot_num, invalid_ptr, numbers, length },
     };
 
